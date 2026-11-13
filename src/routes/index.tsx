@@ -1,23 +1,49 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { StoreShell } from "@/components/store/StoreShell";
+import { Hero } from "@/components/store/landing/Hero";
+import { Marquee } from "@/components/store/landing/Marquee";
+import { Benefits } from "@/components/store/landing/Benefits";
+import { Formula } from "@/components/store/landing/Formula";
+import { Gallery } from "@/components/store/landing/Gallery";
+import { HowToUse } from "@/components/store/landing/HowToUse";
+import { Bundles } from "@/components/store/landing/Bundles";
+import { Privacy } from "@/components/store/landing/Privacy";
+import { Reviews } from "@/components/store/landing/Reviews";
+import { Faq } from "@/components/store/landing/Faq";
+import { FinalCta } from "@/components/store/landing/FinalCta";
+import { StickyBuyBar } from "@/components/store/landing/StickyBuyBar";
+import { storefrontQuery } from "@/lib/storefront-query";
 
-// The home route ships no og:image, so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Sukoon Herbal Tightening Gel — Discreet Intimate Care in Pakistan" },
+      { name: "description", content: "Herbal vaginal tightening gel: antibacterial, cleansing, moisturising and anti-itching. CE & ISO 9001. Plain packaging, Cash on Delivery & Easypaisa across Pakistan." },
+      { property: "og:title", content: "Sukoon Herbal Tightening Gel — Discreet Intimate Care" },
+      { property: "og:description", content: "Gentle herbal intimate care, delivered in plain packaging across Pakistan. COD & Easypaisa." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <StoreShell>
+      <Hero />
+      <Marquee />
+      <Benefits />
+      <Formula />
+      <Gallery />
+      <HowToUse />
+      <Bundles />
+      <Privacy />
+      <Reviews />
+      <Faq />
+      <FinalCta />
+      <StickyBuyBar />
+    </StoreShell>
   );
 }
