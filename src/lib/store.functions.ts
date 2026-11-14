@@ -1,8 +1,69 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { normalizePkPhone } from "./format";
+
+// Best-effort per-IP throttle for the public mutations. Serverless instances
+// are ephemeral, so this is defense-in-depth, not a hard guarantee — a Vercel
+// WAF rate-limit rule is the durable layer. Limits are generous so real
+// customers never hit them; if the IP can't be determined, don't throttle.
+const buckets = new Map<string, { count: number; resetAt: number }>();
+function hitThrottle(key: string, limit: number, windowMs: number): boolean {
+  if (!key) return false;
+  const now = Date.now();
+  const b = buckets.get(key);
+  if (!b || now >= b.resetAt) {
+    buckets.set(key, { count: 1, resetAt: now + windowMs });
+    return false;
+  }
+  b.count += 1;
+  if (buckets.size > 5000) {
+    for (const [k, v] of buckets) if (now >= v.resetAt) buckets.delete(k);
+  }
+  return b.count > limit;
+}
+function clientIp(): string {
+  try {
+    const fwd = getRequest().headers.get("x-forwarded-for") ?? "";
+    return fwd.split(",")[0]?.trim() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+// Identify an image by its magic bytes — the client-supplied contentType is
+// attacker-controlled, so never trust it alone.
+function sniffImageType(bytes: Uint8Array): string | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff)
+    return "image/jpeg";
+  if (
+    bytes.length >= 8 &&
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a
+  )
+    return "image/png";
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  )
+    return "image/webp";
+  return null;
+}
 
 function publicClient() {
   const url = process.env["SUPABASE_URL"]!;
@@ -142,6 +203,12 @@ const ERROR_MESSAGES: Record<string, string> = {
 export const placeOrder = createServerFn({ method: "POST" })
   .validator((data: PlaceOrderInput) => placeOrderSchema.parse(data))
   .handler(async ({ data }) => {
+    if (hitThrottle(`order:${clientIp()}`, 10, 10 * 60 * 1000)) {
+      return {
+        ok: false as const,
+        error: "Too many orders from this device. Please try again in a few minutes.",
+      };
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let proofPath: string | null = null;
@@ -149,6 +216,10 @@ export const placeOrder = createServerFn({ method: "POST" })
       const bytes = Uint8Array.from(atob(data.proof.base64), (c) => c.charCodeAt(0));
       if (bytes.byteLength > 5 * 1024 * 1024) {
         return { ok: false as const, error: "Receipt image is too large (max 5 MB)." };
+      }
+      // Reject files whose real bytes aren't the image type they claim to be.
+      if (sniffImageType(bytes) !== data.proof.contentType) {
+        return { ok: false as const, error: "Receipt must be a JPG, PNG or WEBP image." };
       }
       const ext = ALLOWED_PROOF_TYPES[data.proof.contentType];
       const month = new Date().toISOString().slice(0, 7);
@@ -226,6 +297,9 @@ export type TrackedOrder = {
 export const trackOrder = createServerFn({ method: "POST" })
   .validator((data: { orderNumber: string; phone: string }) => trackSchema.parse(data))
   .handler(async ({ data }): Promise<{ order: TrackedOrder | null }> => {
+    // Throttled lookups answer exactly like a miss, so a brute-force prober
+    // can't tell throttling apart from a wrong order number / phone.
+    if (hitThrottle(`track:${clientIp()}`, 30, 10 * 60 * 1000)) return { order: null };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin
       .from("orders")
