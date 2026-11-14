@@ -17,6 +17,7 @@ import { formatPKR } from "@/lib/format";
 import { BENEFITS } from "@/components/store/landing/Benefits";
 import { FAQS } from "@/components/store/landing/Faq";
 import { cn } from "@/lib/utils";
+import { SITE_URL } from "@/lib/site";
 import pack from "@/assets/product-pack.jpg";
 import applicators from "@/assets/product-applicators.jpg";
 import diagram from "@/assets/product-diagram.jpg";
@@ -40,8 +41,10 @@ export const Route = createFileRoute("/product")({
           "Gentle herbal intimate care in single-use applicators. COD & Easypaisa, discreet delivery across Pakistan.",
       },
       { property: "og:type", content: "product" },
+      { property: "og:url", content: `${SITE_URL}/product` },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/product` }],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(storefrontQuery),
   component: ProductPage,
@@ -134,7 +137,12 @@ function ProductPage() {
                       : "border-transparent opacity-70 hover:opacity-100",
                   )}
                 >
-                  <img src={s.src} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+                  <img
+                    src={s.src}
+                    alt=""
+                    loading="lazy"
+                    className="aspect-square w-full object-cover"
+                  />
                 </button>
               ))}
             </div>
@@ -273,14 +281,27 @@ function ProductPage() {
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             {[
-              { src: beforeAfter, alt: "Before and after illustration", caption: "Visible care, week by week" },
-              { src: lifestyle, alt: "Sukoon gel in everyday use", caption: "Made for quiet, everyday routines" },
+              {
+                src: beforeAfter,
+                alt: "Before and after illustration",
+                caption: "Visible care, week by week",
+              },
+              {
+                src: lifestyle,
+                alt: "Sukoon gel in everyday use",
+                caption: "Made for quiet, everyday routines",
+              },
             ].map((s) => (
               <figure
                 key={s.caption}
                 className="overflow-hidden rounded-[2rem] border border-border/70 bg-card shadow-card"
               >
-                <img src={s.src} alt={s.alt} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                <img
+                  src={s.src}
+                  alt={s.alt}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full object-cover"
+                />
                 <figcaption className="p-4 text-center text-sm font-medium">{s.caption}</figcaption>
               </figure>
             ))}

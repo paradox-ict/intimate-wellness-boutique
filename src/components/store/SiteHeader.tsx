@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, PackageSearch, ShoppingBag, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { useCart } from "@/lib/cart";
 import { cn } from "@/lib/utils";
@@ -60,6 +60,15 @@ export function SiteHeader() {
             className="hidden rounded-full px-4 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground sm:inline-flex"
           >
             Track order
+          </Link>
+          {/* Compact Track pill for phones, where the text link is hidden. */}
+          <Link
+            to="/track"
+            className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-card/70 px-3 py-2 text-xs font-semibold backdrop-blur transition-colors hover:border-primary/40 hover:text-primary sm:hidden"
+            aria-label="Track order"
+          >
+            <PackageSearch className="h-4 w-4" />
+            Track
           </Link>
           <button
             type="button"

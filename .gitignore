@@ -35,3 +35,6 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Vercel build output (local artifact, rebuilt by Vercel from source)
+.vercel

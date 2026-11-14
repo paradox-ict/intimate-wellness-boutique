@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as OrderSuccessRouteImport } from './routes/order-success'
+import { Route as ProductRouteImport } from './routes/product'
 import { Route as TrackRouteImport } from './routes/track'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -42,6 +43,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const OrderSuccessRoute = OrderSuccessRouteImport.update({
   id: '/order-success',
   path: '/order-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductRoute = ProductRouteImport.update({
+  id: '/product',
+  path: '/product',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrackRoute = TrackRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/order-success': typeof OrderSuccessRoute
+  '/product': typeof ProductRoute
   '/track': typeof TrackRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/admin/packs': typeof AuthenticatedAdminPacksRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/order-success': typeof OrderSuccessRoute
+  '/product': typeof ProductRoute
   '/track': typeof TrackRoute
   '/admin/packs': typeof AuthenticatedAdminPacksRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/order-success': typeof OrderSuccessRoute
+  '/product': typeof ProductRoute
   '/track': typeof TrackRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/admin/packs': typeof AuthenticatedAdminPacksRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/order-success'
+    | '/product'
     | '/track'
     | '/admin'
     | '/admin/packs'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/order-success'
+    | '/product'
     | '/track'
     | '/admin/packs'
     | '/admin/settings'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/order-success'
+    | '/product'
     | '/track'
     | '/_authenticated/admin'
     | '/_authenticated/admin/packs'
@@ -147,6 +159,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
+  ProductRoute: typeof ProductRoute
   TrackRoute: typeof TrackRoute
 }
 
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       path: '/order-success'
       fullPath: '/order-success'
       preLoaderRoute: typeof OrderSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/product': {
+      id: '/product'
+      path: '/product'
+      fullPath: '/product'
+      preLoaderRoute: typeof ProductRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/track': {
@@ -257,6 +277,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
   OrderSuccessRoute: OrderSuccessRoute,
+  ProductRoute: ProductRoute,
   TrackRoute: TrackRoute,
 }
 export const routeTree = rootRouteImport

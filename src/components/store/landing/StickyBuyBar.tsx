@@ -45,7 +45,8 @@ export function StickyBuyBar() {
   }, [show]);
 
   const bundle = data.bundles.find((b) => b.id === line?.bundleId) ?? null;
-  const totals = bundle && line ? computeTotals(bundle, line.quantity, data.settings.delivery_fee) : null;
+  const totals =
+    bundle && line ? computeTotals(bundle, line.quantity, data.settings.delivery_fee) : null;
   const callNumber = (data.settings.support_whatsapp || "03115778995").replace(/\s/g, "");
 
   const goCheckout = () => {
@@ -79,7 +80,9 @@ export function StickyBuyBar() {
           className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-full bg-brand px-3 py-2.5 text-sm font-semibold text-primary-foreground"
         >
           <ShoppingBag className="h-4 w-4 shrink-0" />
-          <span className="truncate">{totals ? `Bag · ${formatPKR(totals.total)}` : "View Bag"}</span>
+          <span className="truncate">
+            {totals ? `Bag · ${formatPKR(totals.total)}` : "View Bag"}
+          </span>
         </button>
         <button
           type="button"

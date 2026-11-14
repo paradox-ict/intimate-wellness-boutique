@@ -83,8 +83,8 @@ function SuccessPage() {
             <div className="mt-6 rounded-3xl border border-border/70 bg-card p-6 text-left shadow-card">
               <p className="font-medium">We couldn&apos;t find your order number on this page.</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                If you just placed an order, your order number is in your confirmation — or open
-                the Track order page and enter it there with your mobile number.
+                If you just placed an order, your order number is in your confirmation — or open the
+                Track order page and enter it there with your mobile number.
               </p>
             </div>
           )}

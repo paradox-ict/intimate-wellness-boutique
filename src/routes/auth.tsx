@@ -25,6 +25,24 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+// Client-side sign-in throttle (defense-in-depth: Supabase Auth also
+// rate-limits server-side). 5 failed sign-ins lock this browser for 15
+// minutes. No server table exists for an email-wide lockout — that needs a
+// schema change in the Lovable editor.
+const FAIL_KEY = "sukoon-admin-fails";
+const LOCK_KEY = "sukoon-admin-lock";
+const MAX_FAILS = 5;
+const LOCK_MS = 15 * 60 * 1000;
+
+function lockRemainingMs(): number {
+  try {
+    const until = Number(localStorage.getItem(LOCK_KEY) ?? 0);
+    return Math.max(0, until - Date.now());
+  } catch {
+    return 0;
+  }
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -32,18 +50,55 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [lockedFor, setLockedFor] = useState(() => lockRemainingMs());
 
   useEffect(() => {
     if (user) navigate({ to: "/admin" });
   }, [user, navigate]);
 
+  // Count the lock down so the message clears when it expires.
+  useEffect(() => {
+    if (!lockedFor) return;
+    const t = setTimeout(() => setLockedFor(lockRemainingMs()), Math.min(lockedFor, 30_000));
+    return () => clearTimeout(t);
+  }, [lockedFor]);
+
+  const recordFailure = () => {
+    try {
+      const fails = Number(localStorage.getItem(FAIL_KEY) ?? 0) + 1;
+      if (fails >= MAX_FAILS) {
+        localStorage.setItem(LOCK_KEY, String(Date.now() + LOCK_MS));
+        localStorage.removeItem(FAIL_KEY);
+        setLockedFor(LOCK_MS);
+      } else {
+        localStorage.setItem(FAIL_KEY, String(fails));
+      }
+    } catch {
+      /* storage unavailable — server-side protection still applies */
+    }
+  };
+
+  const clearFailures = () => {
+    try {
+      localStorage.removeItem(FAIL_KEY);
+      localStorage.removeItem(LOCK_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockRemainingMs() > 0) {
+      setLockedFor(lockRemainingMs());
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        clearFailures();
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -54,6 +109,7 @@ function AuthPage() {
         if (!data.session) toast.success("Check your email to confirm your account, then sign in.");
       }
     } catch (err) {
+      if (mode === "signin") recordFailure();
       toast.error(err instanceof Error ? err.message : "Sign-in failed");
     } finally {
       setBusy(false);
@@ -112,6 +168,12 @@ function AuthPage() {
             or
             <span className="h-px flex-1 bg-border" />
           </div>
+          {lockedFor > 0 && (
+            <p className="mt-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-3 text-sm font-medium text-destructive">
+              Too many failed sign-in attempts. Try again in {Math.ceil(lockedFor / 60_000)} minute
+              {Math.ceil(lockedFor / 60_000) === 1 ? "" : "s"}.
+            </p>
+          )}
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
@@ -138,7 +200,13 @@ function AuthPage() {
                 className="h-11 rounded-xl"
               />
             </div>
-            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={busy}>
+            <Button
+              type="submit"
+              variant="hero"
+              size="lg"
+              className="w-full"
+              disabled={busy || lockedFor > 0}
+            >
               {busy && <Loader2 className="animate-spin" />}
               {mode === "signin" ? "Sign in" : "Create account"}
             </Button>
