@@ -102,21 +102,38 @@ export function Hero() {
               <source src="/videos/hero-video.webm" type="video/webm" />
               <source src="/videos/hero-video.mp4" type="video/mp4" />
             </video>
-            {/* Light bottom gradient only — the video stays bright and crisp. */}
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_58%,rgba(46,20,40,0.08)_76%,rgba(46,20,40,0.40)_100%)]" />
-            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 pb-4 pt-4 text-center md:pb-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65)]">
+            {/* Light scrim that follows the lifted overlay — the video stays bright and crisp. */}
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_48%,rgba(46,20,40,0.08)_64%,rgba(46,20,40,0.30)_86%,rgba(46,20,40,0.42)_100%)]" />
+            {/* Overlay lifted clear of the bottom edge (bottom ~11% mobile, ~9% desktop)
+                so it reads as floating, not glued to the frame edge. It stays below
+                the video's own benefit chips (measured: last chip ends ~74% of the
+                frame on mobile, ~82% on the cropped desktop frame) — the CTA lives
+                below the frame instead, so nothing ever covers the chips. */}
+            <div className="absolute inset-x-0 bottom-[11%] flex flex-col items-center px-5 text-center md:bottom-[9%] md:px-6">
+              <p className="animate-fade-up flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.26em] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.7)] [animation-delay:150ms]">
+                <span aria-hidden className="h-px w-6 bg-gold/90" />
                 Sukoon · Intimate care
+                <span aria-hidden className="h-px w-6 bg-gold/90" />
               </p>
-              <p className="mt-1 font-display text-xl leading-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65),0_0_18px_rgba(0,0,0,0.35)] sm:text-[1.7rem]">
-                Feel fresh, confident &amp; cared for
+              <p className="animate-fade-up mt-2 font-display text-[1.3rem] leading-[1.15] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6),0_0_20px_rgba(0,0,0,0.3)] [animation-delay:280ms] sm:text-[1.7rem] md:text-[1.65rem]">
+                Feel fresh,
+                <br className="sm:hidden" /> <span className="text-gold-shine">confident</span>{" "}
+                &amp; cared for
               </p>
-              <Button variant="hero" size="lg" className="mt-3 shadow-glow" asChild>
-                <Link to="/product" hash="buy">
-                  Shop Now — {Number.isFinite(from) ? formatPKR(from) : "Rs 4,999"}
-                </Link>
-              </Button>
             </div>
+          </div>
+          {/* CTA below the video frame — always fully visible and tappable, and it
+              keeps the overlay short enough to stay clear of the video's chips. */}
+          <div className="animate-fade-up mx-auto mt-4 w-full max-w-md [animation-delay:420ms] md:max-w-none">
+            <Button variant="hero" size="lg" className="w-full shadow-glow" asChild>
+              <Link to="/product" hash="buy">
+                Shop Now
+                <span className="rounded-full bg-gold px-2.5 py-0.5 text-sm font-extrabold text-primary">
+                  {Number.isFinite(from) ? formatPKR(from) : "Rs 4,999"}
+                </span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

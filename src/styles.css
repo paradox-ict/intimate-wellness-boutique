@@ -234,6 +234,18 @@
   background-clip: text;
   color: transparent;
 }
+@utility text-gold-shine {
+  background: linear-gradient(
+    115deg,
+    oklch(0.88 0.09 84) 0%,
+    oklch(0.72 0.12 70) 48%,
+    oklch(0.86 0.09 78) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 3px rgba(30, 8, 20, 0.55));
+}
 @utility shimmer {
   background-image: var(--gradient-shimmer);
   background-size: 200% 100%;
