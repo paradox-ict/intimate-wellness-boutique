@@ -243,7 +243,7 @@ function CheckoutPage() {
   const summary = (
     <div className="space-y-5">
       <div className="flex gap-4">
-        <img src={productImg} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
+        <img src={productImg} alt="" width={720} height={720} decoding="async" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
         <div className="min-w-0 flex-1">
           <p className="font-display text-lg leading-tight">Herbal Tightening Gel</p>
           <p className="text-sm text-muted-foreground">

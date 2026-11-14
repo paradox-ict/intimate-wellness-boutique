@@ -28,22 +28,20 @@ export function Gallery() {
     <section className="px-5 py-20 md:px-8 md:py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-10 md:grid-cols-[1.2fr_1fr]">
         <Reveal className="relative overflow-hidden rounded-[2.5rem] bg-secondary shadow-soft">
-          {SHOTS.map((s, i) => (
-            <img
-              key={s.src}
-              src={s.src}
-              srcSet={`${s.srcM} 720w, ${s.src} 1436w`}
-              sizes="(max-width: 768px) 100vw, 640px"
-              alt={s.alt}
-              loading="lazy"
-              className={cn(
-                "aspect-[4/3.4] w-full object-cover transition-all duration-700",
-                i === active
-                  ? "relative opacity-100 scale-100"
-                  : "absolute inset-0 opacity-0 scale-105",
-              )}
-            />
-          ))}
+          {/* Only the active shot is mounted: the old 4-image crossfade made
+              phones download all four full-res photos for one visible frame. */}
+          <img
+            key={SHOTS[active].src}
+            src={SHOTS[active].src}
+            srcSet={`${SHOTS[active].srcM} 720w, ${SHOTS[active].src} 1436w`}
+            sizes="(max-width: 768px) 100vw, 640px"
+            alt={SHOTS[active].alt}
+            width={1436}
+            height={1438}
+            decoding="async"
+            loading="lazy"
+            className="aspect-[4/3.4] w-full animate-fade-in object-cover"
+          />
         </Reveal>
         <div>
           <Reveal>
@@ -75,6 +73,9 @@ export function Gallery() {
                 <img
                   src={s.srcM}
                   alt=""
+                  width={720}
+                  height={720}
+                  decoding="async"
                   loading="lazy"
                   className="aspect-square w-full object-cover"
                 />

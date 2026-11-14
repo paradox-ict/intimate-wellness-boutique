@@ -78,13 +78,12 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    // Replace these placeholders with the app's name and description when first building the app.
-    // Each content route, / included, must still set its own head(). Never add og:image or
-    // twitter:image here: every page without its own would inherit the root's preview image.
+    // Root head: shared defaults only. Each content route sets its own
+    // title/description and its own og:image + twitter:image where needed.
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sukoon — Herbal Intimate Care Gel | Discreet Delivery in Pakistan" },
+      { title: "Sukoon — Herbal Intimate Care Gel | Pakistan" },
       {
         name: "description",
         content:
@@ -96,6 +95,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Discreet, herbal intimate care. Delivered confidentially across Pakistan.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://intimate-wellness-boutique-gamma.vercel.app" },
+      { property: "og:site_name", content: "Sukoon" },
+      { property: "og:locale", content: "en_PK" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#f7efe8" },
     ],
@@ -105,6 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },

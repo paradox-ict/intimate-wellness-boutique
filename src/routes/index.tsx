@@ -10,7 +10,7 @@ import { HowToUse } from "@/components/store/landing/HowToUse";
 import { Bundles } from "@/components/store/landing/Bundles";
 import { Privacy } from "@/components/store/landing/Privacy";
 import { Reviews } from "@/components/store/landing/Reviews";
-import { Faq } from "@/components/store/landing/Faq";
+import { Faq, FAQS } from "@/components/store/landing/Faq";
 import { FinalCta } from "@/components/store/landing/FinalCta";
 import { storefrontQuery } from "@/lib/storefront-query";
 import { SITE_URL } from "@/lib/site";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Herbal vaginal tightening gel: antibacterial, cleansing, moisturising and anti-itching. CE & ISO 9001. Plain packaging, Cash on Delivery & Easypaisa across Pakistan.",
+          "Herbal vaginal tightening gel: antibacterial, cleansing, moisturising, anti-itching. CE & ISO 9001. Plain packaging, COD & Easypaisa across Pakistan.",
       },
       { property: "og:title", content: "Sukoon Herbal Tightening Gel — Discreet Intimate Care" },
       {
@@ -37,6 +37,12 @@ export const Route = createFileRoute("/")({
       { property: "og:image:height", content: "828" },
       { property: "og:image:alt", content: "Sukoon herbal tightening gel applicator on silk with herbs and a flower" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Sukoon Herbal Tightening Gel — Discreet Intimate Care" },
+      {
+        name: "twitter:description",
+        content:
+          "Gentle herbal intimate care, delivered in plain packaging across Pakistan. COD & Easypaisa.",
+      },
       { name: "twitter:image", content: `${SITE_URL}/images/og-image.jpg` },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/` }],
@@ -49,19 +55,43 @@ function Index() {
   const { data } = useSuspenseQuery(storefrontQuery);
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Product",
-    name: "Sukoon Herbal Tightening Gel",
-    description:
-      "Herbal vaginal tightening gel in single-use applicators. Antibacterial, cleansing, moisturising, tightening, anti-itching, odour removal and lubricating. CE & ISO 9001.",
-    brand: { "@type": "Brand", name: "Sukoon" },
-    offers: {
-      "@type": "AggregateOffer",
-      priceCurrency: "PKR",
-      lowPrice: Math.min(...data.bundles.map((b) => b.price)),
-      highPrice: Math.max(...data.bundles.map((b) => b.price)),
-      offerCount: data.bundles.length,
-      availability: "https://schema.org/InStock",
-    },
+    "@graph": [
+      {
+        "@type": "Product",
+        name: "Sukoon Herbal Tightening Gel",
+        description:
+          "Herbal vaginal tightening gel in single-use applicators. Antibacterial, cleansing, moisturising, tightening, anti-itching, odour removal and lubricating. CE & ISO 9001.",
+        url: `${SITE_URL}/`,
+        image: `${SITE_URL}/images/og-image.jpg`,
+        brand: { "@type": "Brand", name: "Sukoon" },
+        offers: {
+          "@type": "AggregateOffer",
+          priceCurrency: "PKR",
+          lowPrice: Math.min(...data.bundles.map((b) => b.price)),
+          highPrice: Math.max(...data.bundles.map((b) => b.price)),
+          offerCount: data.bundles.length,
+          availability: "https://schema.org/InStock",
+        },
+      },
+      {
+        "@type": "Organization",
+        name: "Sukoon",
+        url: `${SITE_URL}/`,
+      },
+      {
+        "@type": "WebSite",
+        name: "Sukoon",
+        url: `${SITE_URL}/`,
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: FAQS.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
   };
 
   return (

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackOrder, type TrackedOrder } from "@/lib/store.functions";
 import { formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
+import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/track")({
   validateSearch: z.object({ order: z.string().max(20).optional() }),
@@ -23,9 +24,11 @@ export const Route = createFileRoute("/track")({
       { property: "og:title", content: "Track Your Order — Sukoon" },
       { property: "og:description", content: "Check your discreet order's delivery status." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE_URL}/track` },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/track` }],
   }),
   component: TrackPage,
 });

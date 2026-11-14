@@ -53,6 +53,9 @@ export function CartDrawer() {
                 <img
                   src={productImg}
                   alt=""
+                  width={720}
+                  height={720}
+                  decoding="async"
                   className="h-24 w-24 shrink-0 rounded-2xl object-cover"
                 />
                 <div className="min-w-0 flex-1">

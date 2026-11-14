@@ -38,7 +38,7 @@ export const Route = createFileRoute("/product")({
       {
         name: "description",
         content:
-          "Sukoon herbal tightening gel in single-use applicators: antibacterial, cleansing, moisturising, tightening, anti-itching, odour removal, lubricating. CE & ISO 9001. Cash on Delivery & Easypaisa, plain packaging across Pakistan.",
+          "Sukoon herbal tightening gel in single-use applicators: antibacterial, cleansing, moisturising, tightening. CE & ISO 9001. COD & Easypaisa, plain packaging.",
       },
       { property: "og:title", content: "Herbal Tightening Gel — Sukoon" },
       {
@@ -53,6 +53,12 @@ export const Route = createFileRoute("/product")({
       { property: "og:image:height", content: "828" },
       { property: "og:image:alt", content: "Sukoon herbal tightening gel applicator on silk with herbs and a flower" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Herbal Tightening Gel — Sukoon" },
+      {
+        name: "twitter:description",
+        content:
+          "Gentle herbal intimate care in single-use applicators. COD & Easypaisa, discreet delivery across Pakistan.",
+      },
       { name: "twitter:image", content: `${SITE_URL}/images/og-image.jpg` },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/product` }],
@@ -91,6 +97,8 @@ function ProductPage() {
     name: "Sukoon Herbal Tightening Gel",
     description:
       "Herbal vaginal tightening gel in single-use applicators. Antibacterial, cleansing, moisturising, tightening, anti-itching, odour removal and lubricating. CE & ISO 9001.",
+    url: `${SITE_URL}/product`,
+    image: `${SITE_URL}/images/og-image.jpg`,
     brand: { "@type": "Brand", name: "Sukoon" },
     offers: {
       "@type": "AggregateOffer",
@@ -129,6 +137,10 @@ function ProductPage() {
                   srcSet={`${SHOTS[active]?.srcM} 720w, ${SHOTS[active]?.src} 1436w`}
                   sizes="(max-width: 1024px) 100vw, 620px"
                   alt={SHOTS[active]?.alt}
+                  width={1436}
+                  height={1438}
+                  decoding="async"
+                  fetchPriority="high"
                   className="aspect-square w-full object-cover"
                 />
               </button>
@@ -153,6 +165,9 @@ function ProductPage() {
                   <img
                     src={s.srcM}
                     alt=""
+                    width={720}
+                    height={720}
+                    decoding="async"
                     loading="lazy"
                     className="aspect-square w-full object-cover"
                   />
@@ -316,6 +331,9 @@ function ProductPage() {
                   srcSet={`${s.srcM} 720w, ${s.src} 1436w`}
                   sizes="(max-width: 640px) 100vw, 620px"
                   alt={s.alt}
+                  width={1436}
+                  height={1438}
+                  decoding="async"
                   loading="lazy"
                   className="aspect-[4/3] w-full object-cover"
                 />
@@ -363,6 +381,9 @@ function ProductPage() {
           <img
             src={SHOTS[active]?.src}
             alt={SHOTS[active]?.alt}
+            width={1436}
+            height={1438}
+            decoding="async"
             className="aspect-square w-full object-cover"
           />
           <button
