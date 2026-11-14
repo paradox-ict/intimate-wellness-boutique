@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Check, Sparkles, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,18 @@ import { SectionHeading } from "./SectionHeading";
 
 export function Bundles() {
   const { data } = useSuspenseQuery(storefrontQuery);
-  const { add } = useCart();
+  const { add, buy } = useCart();
+  const navigate = useNavigate();
   const featured = data.bundles.find((b) => b.badge)?.id ?? data.bundles[0]?.id;
   const [selected, setSelected] = useState<string | undefined>(featured);
   const { settings } = data;
+
+  // Direct buy: set the bag to this bundle and go straight to checkout —
+  // the same behaviour as the product page's Buy Now.
+  const buyNow = (id: string) => {
+    buy(id);
+    void navigate({ to: "/checkout" });
+  };
 
   return (
     <section id="bundles" className="scroll-mt-24 bg-blush px-5 py-20 md:px-8 md:py-28">
@@ -43,13 +51,21 @@ export function Bundles() {
             const save = b.compare_at_price ? b.compare_at_price - b.price : 0;
             return (
               <Reveal key={b.id} delay={i * 100}>
-                <button
-                  type="button"
+                {/* Card is a radio (select the pack); the Buy Now button inside
+                    is a real button — so the card is a div, not a nested <button>. */}
+                <div
                   role="radio"
                   aria-checked={isSel}
+                  tabIndex={0}
                   onClick={() => setSelected(b.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelected(b.id);
+                    }
+                  }}
                   className={cn(
-                    "group relative flex h-full w-full flex-col rounded-[2rem] border-2 bg-card p-6 text-left transition-all duration-500 sm:p-7",
+                    "group relative flex h-full w-full cursor-pointer flex-col rounded-[2rem] border-2 bg-card p-6 text-left transition-all duration-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-7",
                     isSel
                       ? "border-primary shadow-soft md:-translate-y-2"
                       : "border-transparent shadow-card hover:border-primary/30",
@@ -125,7 +141,24 @@ export function Bundles() {
                         : `Delivery ${formatPKR(settings.delivery_fee)}`}
                     </span>
                   </div>
-                </button>
+                  {/* Direct Buy Now on every card — buys this bundle straight
+                      to checkout (same as the product page). Pinned to the
+                      card bottom so all three buttons line up. */}
+                  <div className="mt-auto pt-6">
+                    <Button
+                      variant="hero"
+                      size="lg"
+                      className="min-h-12 w-full"
+                      disabled={!settings.in_stock}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        buyNow(b.id);
+                      }}
+                    >
+                      {settings.in_stock ? "Buy Now" : "Out of stock"}
+                    </Button>
+                  </div>
+                </div>
               </Reveal>
             );
           })}

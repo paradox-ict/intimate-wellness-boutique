@@ -81,7 +81,12 @@ export function Hero() {
         </div>
 
         <div className="relative order-1 md:order-2">
-          <div className="animate-fade-up relative mx-auto aspect-[9/16] w-full max-w-md overflow-hidden rounded-[2.5rem] shadow-soft [animation-delay:200ms] md:aspect-[3/4] md:max-w-none">
+          {/* Hero frame sized to match BloomHer's hero: 9/14 on phones (498px at
+              360px wide) and 9/13 on desktop, capped at 492px wide so the
+              desktop frame is 711px tall — exactly BloomHer's frame size.
+              The narrower desktop frame also keeps the video's own benefit
+              chips (which end ~80% down the frame) clear of the overlay. */}
+          <div className="animate-fade-up relative mx-auto aspect-[9/14] w-full max-w-md overflow-hidden rounded-[2.5rem] shadow-soft [animation-delay:200ms] md:aspect-[9/13] md:max-w-[492px]">
             <video
               ref={videoRef}
               className="absolute inset-0 h-full w-full object-cover"
@@ -102,38 +107,37 @@ export function Hero() {
               <source src="/videos/hero-video.webm" type="video/webm" />
               <source src="/videos/hero-video.mp4" type="video/mp4" />
             </video>
-            {/* Light scrim that follows the lifted overlay — the video stays bright and crisp. */}
+            {/* Light scrim behind the overlay band — the video stays bright
+                and crisp; readability comes from the scrim + text-shadow. */}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_48%,rgba(46,20,40,0.08)_64%,rgba(46,20,40,0.30)_86%,rgba(46,20,40,0.42)_100%)]" />
-            {/* Overlay lifted clear of the bottom edge (bottom ~11% mobile, ~9% desktop)
-                so it reads as floating, not glued to the frame edge. It stays below
-                the video's own benefit chips (measured: last chip ends ~74% of the
-                frame on mobile, ~82% on the cropped desktop frame) — the CTA lives
-                below the frame instead, so nothing ever covers the chips. */}
-            <div className="absolute inset-x-0 bottom-[11%] flex flex-col items-center px-5 text-center md:bottom-[9%] md:px-6">
+            {/* Overlay + Buy Now, back ON the hero — geometry mirrors
+                BloomHer's proven overlay (measured live): eyebrow just below
+                the video's own benefit chips (chips end ~78% mobile / ~80%
+                desktop), one-line two-tone headline, rose pill CTA with the
+                gold price chip, 12px (mobile) / 16px (desktop) off the frame
+                bottom. The headline is one line at both sizes so the whole
+                stack clears the chips. */}
+            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 pb-3 text-center md:px-5 md:pb-4">
               <p className="animate-fade-up flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.26em] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.7)] [animation-delay:150ms]">
                 <span aria-hidden className="h-px w-6 bg-gold/90" />
                 Sukoon · Intimate care
                 <span aria-hidden className="h-px w-6 bg-gold/90" />
               </p>
-              <p className="animate-fade-up mt-2 font-display text-[1.3rem] leading-[1.15] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6),0_0_20px_rgba(0,0,0,0.3)] [animation-delay:280ms] sm:text-[1.7rem] md:text-[1.65rem]">
-                Feel fresh,
-                <br className="sm:hidden" /> <span className="text-gold-shine">confident</span>{" "}
-                &amp; cared for
+              <p className="animate-fade-up mt-2 font-display text-[1.18rem] leading-[1.15] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6),0_0_20px_rgba(0,0,0,0.3)] [animation-delay:280ms] md:text-[1.4rem]">
+                Feel fresh, <span className="text-gold-shine">confident</span> &amp; cared for
               </p>
+              <div className="animate-fade-up mt-2.5 [animation-delay:420ms]">
+                <Button variant="hero" size="lg" className="min-h-11 px-6 shadow-glow md:min-h-12" asChild>
+                  <Link to="/product" hash="buy">
+                    Shop Now
+                    <span className="rounded-full bg-gold px-2.5 py-0.5 text-sm font-extrabold text-primary">
+                      {Number.isFinite(from) ? formatPKR(from) : "Rs 4,999"}
+                    </span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
             </div>
-          </div>
-          {/* CTA below the video frame — always fully visible and tappable, and it
-              keeps the overlay short enough to stay clear of the video's chips. */}
-          <div className="animate-fade-up mx-auto mt-4 w-full max-w-md [animation-delay:420ms] md:max-w-none">
-            <Button variant="hero" size="lg" className="w-full shadow-glow" asChild>
-              <Link to="/product" hash="buy">
-                Shop Now
-                <span className="rounded-full bg-gold px-2.5 py-0.5 text-sm font-extrabold text-primary">
-                  {Number.isFinite(from) ? formatPKR(from) : "Rs 4,999"}
-                </span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
           </div>
         </div>
       </div>
