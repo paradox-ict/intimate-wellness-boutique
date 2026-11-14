@@ -81,7 +81,7 @@ export function Hero() {
         </div>
 
         <div className="relative order-1 md:order-2">
-          <div className="animate-fade-up relative mx-auto aspect-[9/14] w-full max-w-md overflow-hidden rounded-[2.5rem] shadow-soft [animation-delay:200ms] sm:aspect-[9/13] md:aspect-[4/5] md:max-w-none">
+          <div className="animate-fade-up relative mx-auto aspect-[9/16] w-full max-w-md overflow-hidden rounded-[2.5rem] shadow-soft [animation-delay:200ms] md:aspect-[3/4] md:max-w-none">
             <video
               ref={videoRef}
               className="absolute inset-0 h-full w-full object-cover"
@@ -93,18 +93,22 @@ export function Hero() {
               poster="/videos/hero-video-poster.jpg"
               aria-label="Sukoon herbal tightening gel — product film"
             >
-              <source src="/videos/hero-video-m.webm" type="video/webm" media="(max-width: 860px)" />
+              <source
+                src="/videos/hero-video-m.webm"
+                type="video/webm"
+                media="(max-width: 860px)"
+              />
               <source src="/videos/hero-video-m.mp4" type="video/mp4" media="(max-width: 860px)" />
               <source src="/videos/hero-video.webm" type="video/webm" />
               <source src="/videos/hero-video.mp4" type="video/mp4" />
             </video>
             {/* Light bottom gradient only — the video stays bright and crisp. */}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_58%,rgba(46,20,40,0.08)_76%,rgba(46,20,40,0.40)_100%)]" />
-            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 pb-4 pt-10 text-center md:pb-5">
+            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 pb-4 pt-4 text-center md:pb-5">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65)]">
                 Sukoon · Intimate care
               </p>
-              <p className="mt-1 font-display text-2xl leading-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65),0_0_18px_rgba(0,0,0,0.35)] sm:text-[1.7rem]">
+              <p className="mt-1 font-display text-xl leading-tight text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65),0_0_18px_rgba(0,0,0,0.35)] sm:text-[1.7rem]">
                 Feel fresh, confident &amp; cared for
               </p>
               <Button variant="hero" size="lg" className="mt-3 shadow-glow" asChild>

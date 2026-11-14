@@ -91,9 +91,11 @@ function SuccessPage() {
           {order && (
             <div className="animate-fade-up [animation-delay:250ms]">
               <p className="mt-4 text-muted-foreground">
-                {order.paymentMethod === "easypaisa"
-                  ? "We've received your order and Easypaisa details. We'll verify your payment and confirm shortly."
-                  : "Your order is confirmed for Cash on Delivery. We'll call to confirm before dispatch."}
+                {hasDetails
+                  ? order.paymentMethod === "easypaisa"
+                    ? "We've received your order and Easypaisa details. We'll verify your payment and confirm shortly."
+                    : "Your order is confirmed for Cash on Delivery. We'll call to confirm before dispatch."
+                  : "Your order is placed. We'll call to confirm before dispatch."}
               </p>
               <div className="mt-8 rounded-3xl border border-border/70 bg-card p-6 text-left shadow-card">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">

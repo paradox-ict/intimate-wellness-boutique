@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { StoreShell } from "@/components/store/StoreShell";
 import { Hero } from "@/components/store/landing/Hero";
 import { Marquee } from "@/components/store/landing/Marquee";
@@ -40,6 +41,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { data } = useSuspenseQuery(storefrontQuery);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",

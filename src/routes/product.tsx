@@ -105,7 +105,7 @@ function ProductPage() {
       <section className="bg-hero px-5 pb-16 pt-8 md:px-8 md:pb-24 md:pt-12">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2 lg:gap-16">
           {/* Gallery: one main photo + thumbnail strip, tap for lightbox */}
-          <div>
+          <div className="min-w-0">
             <div className="animate-fade-up relative overflow-hidden rounded-[2.5rem] bg-card shadow-soft">
               <button
                 type="button"
@@ -152,7 +152,7 @@ function ProductPage() {
           </div>
 
           {/* Info */}
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
               Sukoon · Intimate care
             </p>
@@ -173,7 +173,7 @@ function ProductPage() {
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-sage text-sage-foreground">
                     <Check className="h-3.5 w-3.5" />
                   </span>
-                  <span className="font-medium">{b.title}</span>
+                  <span className="shrink-0 font-medium whitespace-nowrap">{b.title}</span>
                   <span className="text-muted-foreground">— {b.text}</span>
                 </li>
               ))}

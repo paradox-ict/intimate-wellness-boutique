@@ -578,7 +578,8 @@ function CheckoutPage() {
                 <div className="flex justify-between gap-4">
                   <span className="text-muted-foreground">Your pack</span>
                   <span className="text-right font-medium">
-                    {bundle?.name} × {qty} ({totals?.pieces} applicators)
+                    {bundle?.name} × {qty} ({totals?.pieces} applicator
+                    {totals?.pieces === 1 ? "" : "s"})
                   </span>
                 </div>
                 <div className="flex justify-between gap-4">
