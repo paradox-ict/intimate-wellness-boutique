@@ -109,33 +109,44 @@ export function Hero() {
             </video>
             {/* Light scrim behind the overlay band — the video stays bright
                 and crisp; readability comes from the scrim + text-shadow. */}
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_48%,rgba(46,20,40,0.08)_64%,rgba(46,20,40,0.30)_86%,rgba(46,20,40,0.42)_100%)]" />
-            {/* Overlay + Buy Now, back ON the hero — geometry mirrors
-                BloomHer's proven overlay (measured live): eyebrow just below
-                the video's own benefit chips (chips end ~78% mobile / ~80%
-                desktop), one-line two-tone headline, rose pill CTA with the
-                gold price chip, 12px (mobile) / 16px (desktop) off the frame
-                bottom. The headline is one line at both sizes so the whole
-                stack clears the chips. */}
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_52%,rgba(46,20,40,0.06)_66%,rgba(46,20,40,0.26)_86%,rgba(46,20,40,0.38)_100%)]" />
+            {/* Overlay + Buy Now, ON the hero. The CTA is one composed pill,
+                not a button with a sticker on it: deep-wine gradient, hairline
+                white border, inset top highlight, and the price set in the
+                same pill as champagne type behind a hairline divider — so the
+                price reads as part of the button. The champagne accent is
+                used exactly twice (the italic word + the price) so the whole
+                overlay feels like one designed piece. Geometry mirrors
+                BloomHer's proven overlay: eyebrow just below the video's own
+                benefit chips (chips end ~71% mobile / ~76% desktop), one-line
+                headline, 48px CTA, 12px (mobile) / 16px (desktop) off the
+                frame bottom. The stack is kept compact on purpose so the
+                eyebrow never touches the lowest benefit chip. */}
             <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 pb-3 text-center md:px-5 md:pb-4">
-              <p className="animate-fade-up flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.26em] text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.7)] [animation-delay:150ms]">
-                <span aria-hidden className="h-px w-6 bg-gold/90" />
+              <p className="animate-fade-up flex items-center gap-2.5 text-[10px] font-semibold uppercase leading-[1.1] tracking-[0.3em] text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.6)] [animation-delay:150ms] md:text-[11px]">
+                <span aria-hidden className="h-px w-6 bg-white/50" />
                 Sukoon · Intimate care
-                <span aria-hidden className="h-px w-6 bg-gold/90" />
+                <span aria-hidden className="h-px w-6 bg-white/50" />
               </p>
-              <p className="animate-fade-up mt-2 font-display text-[1.18rem] leading-[1.15] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.6),0_0_20px_rgba(0,0,0,0.3)] [animation-delay:280ms] md:text-[1.4rem]">
-                Feel fresh, <span className="text-gold-shine">confident</span> &amp; cared for
+              <p className="animate-fade-up mt-2 font-display text-[1.15rem] leading-[1.2] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.55),0_0_24px_rgba(0,0,0,0.25)] [animation-delay:280ms] md:text-[1.45rem]">
+                Feel fresh,{" "}
+                <em className="font-medium text-[#f7e3b5] [text-shadow:0_1px_4px_rgba(0,0,0,0.6),0_0_24px_rgba(0,0,0,0.3)]">
+                  confident
+                </em>{" "}
+                &amp; cared for
               </p>
               <div className="animate-fade-up mt-2.5 [animation-delay:420ms]">
-                <Button variant="hero" size="lg" className="min-h-11 px-6 shadow-glow md:min-h-12" asChild>
-                  <Link to="/product" hash="buy">
-                    Shop Now
-                    <span className="rounded-full bg-gold px-2.5 py-0.5 text-sm font-extrabold text-primary">
-                      {Number.isFinite(from) ? formatPKR(from) : "Rs 4,999"}
-                    </span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <Link
+                  to="/product"
+                  hash="buy"
+                  className="group inline-flex h-12 items-center gap-3 rounded-full border border-white/25 bg-[linear-gradient(135deg,#6d1a35_0%,#8f1f45_55%,#a4133c_100%)] px-7 text-[15px] font-semibold text-white shadow-[0_14px_32px_-10px_rgba(46,8,26,0.65),inset_0_1px_0_rgba(255,255,255,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-10px_rgba(46,8,26,0.7),inset_0_1px_0_rgba(255,255,255,0.3)] hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 active:translate-y-0"
+                >
+                  <span>Shop Now</span>
+                  <span aria-hidden className="h-5 w-px bg-white/35" />
+                  <span className="font-bold tracking-wide text-[#f7e3b5]">
+                    {Number.isFinite(from) ? formatPKR(from) : "Rs 4,999"}
+                  </span>
+                </Link>
               </div>
             </div>
           </div>
