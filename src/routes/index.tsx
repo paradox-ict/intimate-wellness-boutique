@@ -18,9 +18,17 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Sukoon Herbal Tightening Gel — Discreet Intimate Care in Pakistan" },
-      { name: "description", content: "Herbal vaginal tightening gel: antibacterial, cleansing, moisturising and anti-itching. CE & ISO 9001. Plain packaging, Cash on Delivery & Easypaisa across Pakistan." },
+      {
+        name: "description",
+        content:
+          "Herbal vaginal tightening gel: antibacterial, cleansing, moisturising and anti-itching. CE & ISO 9001. Plain packaging, Cash on Delivery & Easypaisa across Pakistan.",
+      },
       { property: "og:title", content: "Sukoon Herbal Tightening Gel — Discreet Intimate Care" },
-      { property: "og:description", content: "Gentle herbal intimate care, delivered in plain packaging across Pakistan. COD & Easypaisa." },
+      {
+        property: "og:description",
+        content:
+          "Gentle herbal intimate care, delivered in plain packaging across Pakistan. COD & Easypaisa.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

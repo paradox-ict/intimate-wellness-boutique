@@ -85,9 +85,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Sukoon — Herbal Intimate Care Gel | Discreet Delivery in Pakistan" },
-      { name: "description", content: "Herbal intimate care gel with discreet packaging and confidential delivery across Pakistan. Cash on Delivery & Easypaisa." },
+      {
+        name: "description",
+        content:
+          "Herbal intimate care gel with discreet packaging and confidential delivery across Pakistan. Cash on Delivery & Easypaisa.",
+      },
       { property: "og:title", content: "Sukoon — Herbal Intimate Care Gel" },
-      { property: "og:description", content: "Discreet, herbal intimate care. Delivered confidentially across Pakistan." },
+      {
+        property: "og:description",
+        content: "Discreet, herbal intimate care. Delivered confidentially across Pakistan.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#f7efe8" },

@@ -17,11 +17,25 @@ const PAY_TONE: Record<string, string> = {
 };
 
 export function OrderStatusBadge({ status }: { status: string }) {
-  return <span className={cn("inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold", ORDER_TONE[status])}>{ORDER_STATUS_LABEL[status]}</span>;
+  return (
+    <span
+      className={cn(
+        "inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold",
+        ORDER_TONE[status],
+      )}
+    >
+      {ORDER_STATUS_LABEL[status]}
+    </span>
+  );
 }
 export function PaymentBadge({ status, method }: { status: string; method: string }) {
   return (
-    <span className={cn("inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold", PAY_TONE[status])}>
+    <span
+      className={cn(
+        "inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold",
+        PAY_TONE[status],
+      )}
+    >
       {method === "cod" ? "COD" : `Easypaisa · ${PAYMENT_STATUS_LABEL[status]}`}
     </span>
   );

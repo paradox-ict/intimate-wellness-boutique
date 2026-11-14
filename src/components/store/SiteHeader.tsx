@@ -44,14 +44,21 @@ export function SiteHeader() {
         <Logo />
         <nav className="hidden justify-center gap-8 md:flex" aria-label="Main">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="group relative text-sm font-medium text-foreground/75 transition-colors hover:text-foreground">
+            <a
+              key={n.href}
+              href={n.href}
+              className="group relative text-sm font-medium text-foreground/75 transition-colors hover:text-foreground"
+            >
               {n.label}
               <span className="absolute -bottom-1 left-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full" />
             </a>
           ))}
         </nav>
         <div className="flex items-center gap-1.5">
-          <Link to="/track" className="hidden rounded-full px-4 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground sm:inline-flex">
+          <Link
+            to="/track"
+            className="hidden rounded-full px-4 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground sm:inline-flex"
+          >
             Track order
           </Link>
           <button
@@ -62,7 +69,12 @@ export function SiteHeader() {
           >
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (
-              <span className={cn("absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[11px] font-bold text-primary-foreground", bump && "animate-pop")}>
+              <span
+                className={cn(
+                  "absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[11px] font-bold text-primary-foreground",
+                  bump && "animate-pop",
+                )}
+              >
                 {count}
               </span>
             )}
@@ -87,11 +99,20 @@ export function SiteHeader() {
         <nav className="min-h-0 px-5" aria-label="Mobile">
           <div className="flex flex-col gap-1 py-4">
             {NAV.map((n) => (
-              <a key={n.href} href={n.href} onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-3 font-display text-xl">
+              <a
+                key={n.href}
+                href={n.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl px-3 py-3 font-display text-xl"
+              >
                 {n.label}
               </a>
             ))}
-            <Link to="/track" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-3 font-display text-xl">
+            <Link
+              to="/track"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-3 py-3 font-display text-xl"
+            >
               Track order
             </Link>
           </div>

@@ -20,17 +20,17 @@ Core Features & Functionality
 
 • Payment Methods (Pakistan-Focused):
 
-	• Cash on Delivery (COD).
+    • Cash on Delivery (COD).
 
-	• Easypaisa manual transfer integration, including an option for customers to upload/submit payment proof (receipt screenshot/transaction ID) during checkout.
+    • Easypaisa manual transfer integration, including an option for customers to upload/submit payment proof (receipt screenshot/transaction ID) during checkout.
 
 • Backend & Admin Panel:
 
-	• Full-stack architecture to manage orders, inventory, bundle pricing, and customer details.
+    • Full-stack architecture to manage orders, inventory, bundle pricing, and customer details.
 
-	• Payment verification workflow in the admin dashboard to review submitted Easypaisa payment proofs and approve or reject orders.
+    • Payment verification workflow in the admin dashboard to review submitted Easypaisa payment proofs and approve or reject orders.
 
-	• Order status tracking for both admins and customers.
+    • Order status tracking for both admins and customers.
 
 This project was built with [Lovable](https://lovable.dev).
 

@@ -39,7 +39,11 @@ function AdminLayout() {
   };
 
   if (isLoading) {
-    return <div className="grid min-h-screen place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+    return (
+      <div className="grid min-h-screen place-items-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (!isAdmin) {
@@ -47,8 +51,12 @@ function AdminLayout() {
       <div className="grid min-h-screen place-items-center bg-hero px-5 text-center">
         <div className="max-w-sm">
           <h1 className="text-3xl font-light">No admin access</h1>
-          <p className="mt-3 text-sm text-muted-foreground">You're signed in as {user.email}, but this account isn't a store admin.</p>
-          <Button variant="line" size="lg" className="mt-6" onClick={signOut}>Sign out</Button>
+          <p className="mt-3 text-sm text-muted-foreground">
+            You're signed in as {user.email}, but this account isn't a store admin.
+          </p>
+          <Button variant="line" size="lg" className="mt-6" onClick={signOut}>
+            Sign out
+          </Button>
         </div>
       </div>
     );
@@ -60,18 +68,33 @@ function AdminLayout() {
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 md:px-6">
           <div className="flex min-w-0 items-center gap-6">
             <Logo />
-            <span className="hidden rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-secondary-foreground sm:inline">Admin</span>
+            <span className="hidden rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-secondary-foreground sm:inline">
+              Admin
+            </span>
             <nav className="hidden items-center gap-1 md:flex">
               {NAV.map((n) => (
-                <Link key={n.to} to={n.to} activeOptions={{ exact: n.exact }} className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[status=active]:bg-secondary data-[status=active]:text-secondary-foreground">
+                <Link
+                  key={n.to}
+                  to={n.to}
+                  activeOptions={{ exact: n.exact }}
+                  className="flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[status=active]:bg-secondary data-[status=active]:text-secondary-foreground"
+                >
                   <n.icon className="h-4 w-4" /> {n.label}
                 </Link>
               ))}
             </nav>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><a href="/" target="_blank" rel="noreferrer"><ExternalLink />Store</a></Button>
-            <Button variant="ghost" size="sm" onClick={signOut}><LogOut />Sign out</Button>
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+              <a href="/" target="_blank" rel="noreferrer">
+                <ExternalLink />
+                Store
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={signOut}>
+              <LogOut />
+              Sign out
+            </Button>
           </div>
         </div>
       </header>
@@ -80,7 +103,14 @@ function AdminLayout() {
       </main>
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border bg-card/95 backdrop-blur-xl md:hidden">
         {NAV.map((n) => (
-          <Link key={n.to} to={n.to} activeOptions={{ exact: n.exact }} className={cn("flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-muted-foreground data-[status=active]:text-primary")}>
+          <Link
+            key={n.to}
+            to={n.to}
+            activeOptions={{ exact: n.exact }}
+            className={cn(
+              "flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-muted-foreground data-[status=active]:text-primary",
+            )}
+          >
             <n.icon className="h-5 w-5" /> {n.label}
           </Link>
         ))}

@@ -1,5 +1,9 @@
 /** Downscales an image file in the browser and returns base64 JPEG (no data: prefix). */
-export async function compressImage(file: File, maxSide = 1600, quality = 0.82): Promise<{ base64: string; contentType: string; previewUrl: string }> {
+export async function compressImage(
+  file: File,
+  maxSide = 1600,
+  quality = 0.82,
+): Promise<{ base64: string; contentType: string; previewUrl: string }> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
   const w = Math.round(bitmap.width * scale);

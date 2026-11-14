@@ -12,7 +12,8 @@ function publicClient() {
     global: {
       fetch: (input, init) => {
         const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+          h.delete("Authorization");
         h.set("apikey", key);
         return fetch(input, { ...init, headers: h });
       },
@@ -44,31 +45,33 @@ export type Storefront = {
   };
 };
 
-export const getStorefront = createServerFn({ method: "GET" }).handler(async (): Promise<Storefront> => {
-  const sb = publicClient();
-  const [{ data: bundles, error: bErr }, { data: s, error: sErr }] = await Promise.all([
-    sb
-      .from("bundles")
-      .select("id,name,tagline,pieces,price,compare_at_price,badge,free_delivery")
-      .eq("is_active", true)
-      .order("sort_order"),
-    sb.from("store_settings").select("*").eq("id", 1).maybeSingle(),
-  ]);
-  if (bErr || sErr) console.error("storefront load failed", bErr ?? sErr);
-  const stock = s?.stock_count ?? 0;
-  return {
-    bundles: bundles ?? [],
-    settings: {
-      in_stock: stock > 0,
-      low_stock: stock > 0 && stock <= (s?.low_stock_threshold ?? 20),
-      stock_count: stock,
-      delivery_fee: s?.delivery_fee ?? 200,
-      easypaisa_account_name: s?.easypaisa_account_name ?? "",
-      easypaisa_number: s?.easypaisa_number ?? "",
-      support_whatsapp: s?.support_whatsapp ?? "",
-    },
-  };
-});
+export const getStorefront = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Storefront> => {
+    const sb = publicClient();
+    const [{ data: bundles, error: bErr }, { data: s, error: sErr }] = await Promise.all([
+      sb
+        .from("bundles")
+        .select("id,name,tagline,pieces,price,compare_at_price,badge,free_delivery")
+        .eq("is_active", true)
+        .order("sort_order"),
+      sb.from("store_settings").select("*").eq("id", 1).maybeSingle(),
+    ]);
+    if (bErr || sErr) console.error("storefront load failed", bErr ?? sErr);
+    const stock = s?.stock_count ?? 0;
+    return {
+      bundles: bundles ?? [],
+      settings: {
+        in_stock: stock > 0,
+        low_stock: stock > 0 && stock <= (s?.low_stock_threshold ?? 20),
+        stock_count: stock,
+        delivery_fee: s?.delivery_fee ?? 200,
+        easypaisa_account_name: s?.easypaisa_account_name ?? "",
+        easypaisa_number: s?.easypaisa_number ?? "",
+        support_whatsapp: s?.support_whatsapp ?? "",
+      },
+    };
+  },
+);
 
 const ALLOWED_PROOF_TYPES: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -82,7 +85,10 @@ const phoneSchema = z
   .transform((v, ctx) => {
     const n = normalizePkPhone(v);
     if (!n) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter a valid mobile number (03XX XXXXXXX)" });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Enter a valid mobile number (03XX XXXXXXX)",
+      });
       return z.NEVER;
     }
     return n;
@@ -117,7 +123,11 @@ const placeOrderSchema = z
       });
     }
     if (v.proof && !ALLOWED_PROOF_TYPES[v.proof.contentType]) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["proof"], message: "Receipt must be a JPG, PNG or WEBP image" });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["proof"],
+        message: "Receipt must be a JPG, PNG or WEBP image",
+      });
     }
   });
 
@@ -171,7 +181,12 @@ export const placeOrder = createServerFn({ method: "POST" })
       if (proofPath) await supabaseAdmin.storage.from("payment-proofs").remove([proofPath]);
       const code = Object.keys(ERROR_MESSAGES).find((k) => error?.message?.includes(k));
       console.error("place_order failed", error);
-      return { ok: false as const, error: code ? ERROR_MESSAGES[code] : "Something went wrong placing your order. Please try again." };
+      return {
+        ok: false as const,
+        error: code
+          ? ERROR_MESSAGES[code]
+          : "Something went wrong placing your order. Please try again.",
+      };
     }
 
     return {
@@ -184,7 +199,12 @@ export const placeOrder = createServerFn({ method: "POST" })
   });
 
 const trackSchema = z.object({
-  orderNumber: z.string().trim().min(4).max(20).transform((v) => v.toUpperCase()),
+  orderNumber: z
+    .string()
+    .trim()
+    .min(4)
+    .max(20)
+    .transform((v) => v.toUpperCase()),
   phone: phoneSchema,
 });
 

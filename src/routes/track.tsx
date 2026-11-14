@@ -16,7 +16,10 @@ export const Route = createFileRoute("/track")({
   head: () => ({
     meta: [
       { title: "Track Your Order — Sukoon" },
-      { name: "description", content: "Check the status of your Sukoon order with your order number and mobile number." },
+      {
+        name: "description",
+        content: "Check the status of your Sukoon order with your order number and mobile number.",
+      },
       { property: "og:title", content: "Track Your Order — Sukoon" },
       { property: "og:description", content: "Check your discreet order's delivery status." },
       { property: "og:type", content: "website" },
@@ -70,27 +73,55 @@ function TrackPage() {
       <section className="bg-hero px-5 py-14 md:py-20">
         <div className="mx-auto max-w-xl">
           <div className="animate-fade-up text-center">
-            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand text-primary-foreground shadow-glow"><PackageSearch className="h-6 w-6" /></span>
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand text-primary-foreground shadow-glow">
+              <PackageSearch className="h-6 w-6" />
+            </span>
             <h1 className="mt-5 text-4xl font-light sm:text-5xl">Track your order</h1>
-            <p className="mt-3 text-muted-foreground">Enter your order number and the mobile number you used at checkout.</p>
+            <p className="mt-3 text-muted-foreground">
+              Enter your order number and the mobile number you used at checkout.
+            </p>
           </div>
           <form
-            onSubmit={(e) => { e.preventDefault(); run(orderNumber, phone); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              run(orderNumber, phone);
+            }}
             className="animate-fade-up mt-8 space-y-4 rounded-3xl border border-border/70 bg-card p-5 shadow-card sm:p-7 [animation-delay:120ms]"
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="ord">Order number</Label>
-                <Input id="ord" value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} placeholder="SK-XXXXXX" className="h-12 rounded-xl uppercase" />
+                <Input
+                  id="ord"
+                  value={orderNumber}
+                  onChange={(e) => setOrderNumber(e.target.value)}
+                  placeholder="SK-XXXXXX"
+                  className="h-12 rounded-xl uppercase"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="ph">Mobile number</Label>
-                <Input id="ph" type="tel" inputMode="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="03XX XXXXXXX" className="h-12 rounded-xl" />
+                <Input
+                  id="ph"
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="03XX XXXXXXX"
+                  className="h-12 rounded-xl"
+                />
               </div>
             </div>
             {error && <p className="text-sm font-medium text-destructive">{error}</p>}
             <Button type="submit" variant="hero" size="xl" className="w-full" disabled={loading}>
-              {loading ? <><Loader2 className="animate-spin" />Checking…</> : "Track order"}
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  Checking…
+                </>
+              ) : (
+                "Track order"
+              )}
             </Button>
           </form>
           {order && (

@@ -16,7 +16,10 @@ describe("Pakistani phone numbers", () => {
 describe("Order totals", () => {
   it("adds the delivery fee to bundles without free delivery", () => {
     expect(computeTotals({ price: 1499, pieces: 1, free_delivery: false }, 2, 200)).toEqual({
-      subtotal: 2998, delivery: 200, total: 3198, pieces: 2,
+      subtotal: 2998,
+      delivery: 200,
+      total: 3198,
+      pieces: 2,
     });
   });
   it("skips the delivery fee for free-delivery bundles", () => {

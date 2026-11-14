@@ -19,7 +19,8 @@ export function Hero() {
             quietly.
           </h1>
           <p className="animate-fade-up mt-6 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg [animation-delay:240ms]">
-            A gentle, herbal tightening gel in a single-use applicator. Cleanses, moisturises and restores comfort — delivered in a plain box no one will question.
+            A gentle, herbal tightening gel in a single-use applicator. Cleanses, moisturises and
+            restores comfort — delivered in a plain box no one will question.
           </p>
           <div className="animate-fade-up mt-8 flex flex-col gap-3 sm:flex-row [animation-delay:360ms]">
             <Button variant="hero" size="xl" asChild>
@@ -37,7 +38,10 @@ export function Hero() {
               { icon: Truck, label: "Cash on Delivery" },
               { icon: ShieldCheck, label: "CE · ISO 9001" },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex flex-col items-start gap-2 rounded-2xl border border-border/70 bg-card/60 p-3 backdrop-blur">
+              <div
+                key={label}
+                className="flex flex-col items-start gap-2 rounded-2xl border border-border/70 bg-card/60 p-3 backdrop-blur"
+              >
                 <Icon className="h-4 w-4 text-primary" />
                 <span className="text-xs font-medium leading-tight">{label}</span>
               </div>
@@ -47,12 +51,23 @@ export function Hero() {
 
         <div className="relative">
           <div className="animate-fade-up relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-t-[14rem] rounded-b-[2.5rem] md:rounded-t-[18rem] shadow-soft [animation-delay:200ms] md:max-w-none">
-            <img src={hero} alt="Herbal gel applicator resting on blush silk with a gerbera flower" width={1600} height={1104} className="h-full w-full scale-105 object-cover object-[65%_center]" />
+            <img
+              src={hero}
+              alt="Herbal gel applicator resting on blush silk with a gerbera flower"
+              width={1600}
+              height={1104}
+              className="h-full w-full scale-105 object-cover object-[65%_center]"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-ink/25 via-transparent to-transparent" />
           </div>
 
           <div className="animate-float absolute -left-2 bottom-10 w-40 rounded-3xl border border-border/60 bg-card/90 p-2.5 shadow-card backdrop-blur-md sm:-left-8 sm:w-48">
-            <img src={product.url} alt="Gel pouches and applicator" className="aspect-square w-full rounded-2xl object-cover" loading="lazy" />
+            <img
+              src={product.url}
+              alt="Gel pouches and applicator"
+              className="aspect-square w-full rounded-2xl object-cover"
+              loading="lazy"
+            />
             <p className="mt-2 px-1 text-xs font-semibold">Single-use applicator</p>
             <p className="px-1 pb-1 text-[11px] text-muted-foreground">Pre-filled, hygienic</p>
           </div>

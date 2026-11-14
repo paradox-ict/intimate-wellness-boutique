@@ -19,7 +19,11 @@ export const isAdminQuery = (userId: string) =>
 export const ordersQuery = queryOptions({
   queryKey: ["admin", "orders"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(1000);
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(1000);
     if (error) throw error;
     return data;
   },
@@ -30,7 +34,11 @@ export const orderEventsQuery = (orderId: string) =>
   queryOptions({
     queryKey: ["admin", "order-events", orderId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("order_events").select("*").eq("order_id", orderId).order("created_at");
+      const { data, error } = await supabase
+        .from("order_events")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("created_at");
       if (error) throw error;
       return data;
     },
