@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://sukoon.pk/sitemap.xml
+Sitemap: https://intimate-wellness-boutique-gamma.vercel.app/sitemap.xml
