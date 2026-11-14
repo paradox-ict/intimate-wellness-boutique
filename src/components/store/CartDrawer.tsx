@@ -14,7 +14,7 @@ import { storefrontQuery } from "@/lib/storefront-query";
 import { computeTotals, formatPKR } from "@/lib/format";
 import { QuantityStepper } from "./QuantityStepper";
 import { cn } from "@/lib/utils";
-import productImg from "@/assets/product-pack.jpg";
+import productImg from "@/assets/product-pack-m.jpg";
 
 export function CartDrawer() {
   const { open, setOpen, line, setQuantity, setBundle, clear } = useCart();

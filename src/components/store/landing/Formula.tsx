@@ -1,6 +1,7 @@
 import { Check, Leaf } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import flatlay from "@/assets/herbal-flatlay.jpg";
+import flatlayM from "@/assets/herbal-flatlay-m.jpg";
 
 const POINTS = [
   "Herbal & natural plant extracts",
@@ -17,6 +18,8 @@ export function Formula() {
           <div className="overflow-hidden rounded-[2.5rem] shadow-soft">
             <img
               src={flatlay}
+              srcSet={`${flatlayM} 720w, ${flatlay} 1200w`}
+              sizes="(max-width: 768px) 100vw, 640px"
               alt="Aloe vera, chamomile, rose and sage around a dish of herbal gel"
               width={1200}
               height={1200}

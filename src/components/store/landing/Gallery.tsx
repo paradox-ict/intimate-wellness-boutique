@@ -2,19 +2,24 @@ import { useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
 import pack from "@/assets/product-pack.jpg";
+import packM from "@/assets/product-pack-m.jpg";
 import applicators from "@/assets/product-applicators.jpg";
+import applicatorsM from "@/assets/product-applicators-m.jpg";
 import diagram from "@/assets/product-diagram.jpg";
+import diagramM from "@/assets/product-diagram-m.jpg";
 import benefits from "@/assets/product-benefits.jpg";
+import benefitsM from "@/assets/product-benefits-m.jpg";
 
 const SHOTS = [
   {
     src: pack,
+    srcM: packM,
     alt: "Three gel pouches with applicator and certification badges",
     label: "The pack",
   },
-  { src: applicators, alt: "Two pre-filled applicators", label: "Applicators" },
-  { src: diagram, alt: "Pouches and applicator", label: "Everyday care" },
-  { src: benefits, alt: "Pouch and applicator close-up", label: "Sealed pouch" },
+  { src: applicators, srcM: applicatorsM, alt: "Two pre-filled applicators", label: "Applicators" },
+  { src: diagram, srcM: diagramM, alt: "Pouches and applicator", label: "Everyday care" },
+  { src: benefits, srcM: benefitsM, alt: "Pouch and applicator close-up", label: "Sealed pouch" },
 ];
 
 export function Gallery() {
@@ -27,6 +32,8 @@ export function Gallery() {
             <img
               key={s.src}
               src={s.src}
+              srcSet={`${s.srcM} 720w, ${s.src} 1436w`}
+              sizes="(max-width: 768px) 100vw, 640px"
               alt={s.alt}
               loading="lazy"
               className={cn(
@@ -66,7 +73,7 @@ export function Gallery() {
                 )}
               >
                 <img
-                  src={s.src}
+                  src={s.srcM}
                   alt=""
                   loading="lazy"
                   className="aspect-square w-full object-cover"

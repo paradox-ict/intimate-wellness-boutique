@@ -81,7 +81,7 @@ export function StickyBuyBar() {
         >
           <ShoppingBag className="h-4 w-4 shrink-0" />
           <span className="truncate">
-            {totals ? `Bag · ${formatPKR(totals.total)}` : "View Bag"}
+            {totals ? formatPKR(totals.total) : "View Bag"}
           </span>
         </button>
         <button

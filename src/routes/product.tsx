@@ -19,11 +19,17 @@ import { FAQS } from "@/components/store/landing/Faq";
 import { cn } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
 import pack from "@/assets/product-pack.jpg";
+import packM from "@/assets/product-pack-m.jpg";
 import applicators from "@/assets/product-applicators.jpg";
+import applicatorsM from "@/assets/product-applicators-m.jpg";
 import diagram from "@/assets/product-diagram.jpg";
+import diagramM from "@/assets/product-diagram-m.jpg";
 import benefitsImg from "@/assets/product-benefits.jpg";
+import benefitsM from "@/assets/product-benefits-m.jpg";
 import beforeAfter from "@/assets/product-before-after.jpg";
+import beforeAfterM from "@/assets/product-before-after-m.jpg";
 import lifestyle from "@/assets/product-lifestyle.jpg";
+import lifestyleM from "@/assets/product-lifestyle-m.jpg";
 
 export const Route = createFileRoute("/product")({
   head: () => ({
@@ -42,7 +48,12 @@ export const Route = createFileRoute("/product")({
       },
       { property: "og:type", content: "product" },
       { property: "og:url", content: `${SITE_URL}/product` },
+      { property: "og:image", content: `${SITE_URL}/images/og-image.jpg` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "828" },
+      { property: "og:image:alt", content: "Sukoon herbal tightening gel applicator on silk with herbs and a flower" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: `${SITE_URL}/images/og-image.jpg` },
     ],
     links: [{ rel: "canonical", href: `${SITE_URL}/product` }],
   }),
@@ -51,10 +62,10 @@ export const Route = createFileRoute("/product")({
 });
 
 const SHOTS = [
-  { src: pack, alt: "Sukoon gel pouches with applicator", label: "The pack" },
-  { src: applicators, alt: "Two pre-filled applicators", label: "Applicators" },
-  { src: diagram, alt: "Gel pouches and applicator diagram", label: "Inside the pack" },
-  { src: benefitsImg, alt: "Sukoon gel — the seven benefits", label: "Benefits" },
+  { src: pack, srcM: packM, alt: "Sukoon gel pouches with applicator", label: "The pack" },
+  { src: applicators, srcM: applicatorsM, alt: "Two pre-filled applicators", label: "Applicators" },
+  { src: diagram, srcM: diagramM, alt: "Gel pouches and applicator diagram", label: "Inside the pack" },
+  { src: benefitsImg, srcM: benefitsM, alt: "Sukoon gel — the seven benefits", label: "Benefits" },
 ];
 
 function ProductPage() {
@@ -115,6 +126,8 @@ function ProductPage() {
               >
                 <img
                   src={SHOTS[active]?.src}
+                  srcSet={`${SHOTS[active]?.srcM} 720w, ${SHOTS[active]?.src} 1436w`}
+                  sizes="(max-width: 1024px) 100vw, 620px"
                   alt={SHOTS[active]?.alt}
                   className="aspect-square w-full object-cover"
                 />
@@ -138,7 +151,7 @@ function ProductPage() {
                   )}
                 >
                   <img
-                    src={s.src}
+                    src={s.srcM}
                     alt=""
                     loading="lazy"
                     className="aspect-square w-full object-cover"
@@ -214,12 +227,12 @@ function ProductPage() {
                             {b.free_delivery ? " · Free delivery" : ""}
                           </span>
                         </span>
-                        <span className="text-right">
-                          <span className="block font-display text-2xl tabular-nums">
+                        <span className="shrink-0 text-right">
+                          <span className="block whitespace-nowrap font-display text-2xl tabular-nums">
                             {formatPKR(b.price)}
                           </span>
                           {save > 0 && (
-                            <span className="block text-xs text-muted-foreground">
+                            <span className="block whitespace-nowrap text-xs text-muted-foreground">
                               Save {formatPKR(save)}
                             </span>
                           )}
@@ -232,7 +245,7 @@ function ProductPage() {
                           onClick={() => buyNow(b.id)}
                           disabled={!data.settings.in_stock}
                         >
-                          Buy Now — {formatPKR(b.price)}
+                          Buy Now
                         </Button>
                         <Button
                           variant="line"
@@ -283,11 +296,13 @@ function ProductPage() {
             {[
               {
                 src: beforeAfter,
+                srcM: beforeAfterM,
                 alt: "Before and after illustration",
                 caption: "Visible care, week by week",
               },
               {
                 src: lifestyle,
+                srcM: lifestyleM,
                 alt: "Sukoon gel in everyday use",
                 caption: "Made for quiet, everyday routines",
               },
@@ -298,6 +313,8 @@ function ProductPage() {
               >
                 <img
                   src={s.src}
+                  srcSet={`${s.srcM} 720w, ${s.src} 1436w`}
+                  sizes="(max-width: 640px) 100vw, 620px"
                   alt={s.alt}
                   loading="lazy"
                   className="aspect-[4/3] w-full object-cover"

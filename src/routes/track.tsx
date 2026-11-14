@@ -24,6 +24,7 @@ export const Route = createFileRoute("/track")({
       { property: "og:description", content: "Check your discreet order's delivery status." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
     ],
   }),
   component: TrackPage,

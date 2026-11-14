@@ -28,7 +28,7 @@ import { placeOrder } from "@/lib/store.functions";
 import { computeTotals, formatPKR, formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
 import { compressImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
-import productImg from "@/assets/product-pack.jpg";
+import productImg from "@/assets/product-pack-m.jpg";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
