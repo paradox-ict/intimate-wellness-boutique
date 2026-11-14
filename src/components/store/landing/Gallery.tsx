@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
-import p14 from "@/assets/product-14.jpg.asset.json";
-import p12 from "@/assets/product-12.jpg.asset.json";
-import p09 from "@/assets/product-09.jpg.asset.json";
-import p11 from "@/assets/product-11.jpg.asset.json";
+import pack from "@/assets/product-pack.jpg";
+import applicators from "@/assets/product-applicators.jpg";
+import diagram from "@/assets/product-diagram.jpg";
+import benefits from "@/assets/product-benefits.jpg";
 
 const SHOTS = [
   {
-    src: p14.url,
+    src: pack,
     alt: "Three gel pouches with applicator and certification badges",
     label: "The pack",
   },
-  { src: p12.url, alt: "Two pre-filled applicators", label: "Applicators" },
-  { src: p09.url, alt: "Pouches and applicator", label: "Everyday care" },
-  { src: p11.url, alt: "Pouch and applicator close-up", label: "Sealed pouch" },
+  { src: applicators, alt: "Two pre-filled applicators", label: "Applicators" },
+  { src: diagram, alt: "Pouches and applicator", label: "Everyday care" },
+  { src: benefits, alt: "Pouch and applicator close-up", label: "Sealed pouch" },
 ];
 
 export function Gallery() {

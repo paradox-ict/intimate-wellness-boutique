@@ -265,16 +265,6 @@
   transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
-}
+/* NOTE: no prefers-reduced-motion gating here on purpose — the owner's
+   phone has Android "Remove animations" on, and other sites' animations
+   still run there, so Sukoon's animations must run on all devices. */

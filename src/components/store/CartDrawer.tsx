@@ -14,7 +14,7 @@ import { storefrontQuery } from "@/lib/storefront-query";
 import { computeTotals, formatPKR } from "@/lib/format";
 import { QuantityStepper } from "./QuantityStepper";
 import { cn } from "@/lib/utils";
-import productImg from "@/assets/product-14.jpg.asset.json";
+import productImg from "@/assets/product-pack.jpg";
 
 export function CartDrawer() {
   const { open, setOpen, line, setQuantity, setBundle, clear } = useCart();
@@ -51,7 +51,7 @@ export function CartDrawer() {
             <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
               <div className="flex gap-4">
                 <img
-                  src={productImg.url}
+                  src={productImg}
                   alt=""
                   className="h-24 w-24 shrink-0 rounded-2xl object-cover"
                 />

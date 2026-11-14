@@ -141,7 +141,7 @@ export function Bundles() {
             {settings.in_stock ? "Add to bag" : "Out of stock"}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Cash on Delivery · Easypaisa · 2–5 day delivery nationwide
+            Cash on Delivery · Easypaisa · 2–4 working days nationwide
           </p>
         </Reveal>
       </div>

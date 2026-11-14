@@ -34,7 +34,7 @@ export const FAQS = [
   },
   {
     q: "How long does delivery take?",
-    a: "Usually 2–3 working days in major cities and 3–5 working days elsewhere. You can check progress anytime on the Track order page.",
+    a: "Usually 2–4 working days across Pakistan. You can check progress anytime on the Track order page.",
   },
   {
     q: "How do I track my order?",

@@ -28,7 +28,7 @@ import { placeOrder } from "@/lib/store.functions";
 import { computeTotals, formatPKR, normalizePkPhone } from "@/lib/format";
 import { compressImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
-import productImg from "@/assets/product-14.jpg.asset.json";
+import productImg from "@/assets/product-pack.jpg";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -222,7 +222,7 @@ function CheckoutPage() {
   const summary = (
     <div className="space-y-5">
       <div className="flex gap-4">
-        <img src={productImg.url} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
+        <img src={productImg} alt="" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
         <div className="min-w-0 flex-1">
           <p className="font-display text-lg leading-tight">Herbal Tightening Gel</p>
           <p className="text-sm text-muted-foreground">
@@ -278,7 +278,7 @@ function CheckoutPage() {
         </p>
         <p className="flex items-center gap-2">
           <Truck className="h-3.5 w-3.5 text-primary" />
-          2–5 working days nationwide
+          2–4 working days nationwide
         </p>
         <p className="flex items-center gap-2">
           <ShieldCheck className="h-3.5 w-3.5 text-primary" />
