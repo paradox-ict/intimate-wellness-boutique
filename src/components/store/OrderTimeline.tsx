@@ -1,5 +1,6 @@
-import { Check, X } from "lucide-react";
+import { Check, Copy, X } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import type { TrackedOrder } from "@/lib/store.functions";
 import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, formatPKR } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,17 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Order</p>
-          <p className="font-display text-3xl">{order.order_number}</p>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard?.writeText(order.order_number);
+              toast.success("✓ Copied");
+            }}
+            className="flex items-center gap-2 font-display text-3xl hover:text-primary"
+            aria-label="Copy order number"
+          >
+            {order.order_number} <Copy className="h-5 w-5" />
+          </button>
         </div>
         <span
           className={cn(

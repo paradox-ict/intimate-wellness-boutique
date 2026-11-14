@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeTotals, normalizePkPhone } from "./format";
+import { computeTotals, formatPkPhoneDisplay, normalizePkPhone } from "./format";
 
 describe("Pakistani phone numbers", () => {
   it("accepts 03XX formats and +92 formats, normalising to 03XXXXXXXXX", () => {
@@ -10,6 +10,11 @@ describe("Pakistani phone numbers", () => {
   it("rejects non-mobile or short numbers", () => {
     expect(normalizePkPhone("042-1234567")).toBeNull();
     expect(normalizePkPhone("0300123")).toBeNull();
+  });
+  it("formats digits as the user types", () => {
+    expect(formatPkPhoneDisplay("0300")).toBe("0300");
+    expect(formatPkPhoneDisplay("03001234567")).toBe("0300 1234567");
+    expect(formatPkPhoneDisplay("0300 1234 56789")).toBe("0300 1234567");
   });
 });
 

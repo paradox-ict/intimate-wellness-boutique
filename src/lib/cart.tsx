@@ -15,6 +15,8 @@ type CartCtx = {
   open: boolean;
   setOpen: (v: boolean) => void;
   add: (bundleId: string, quantity?: number) => void;
+  /** Set the bag to one of this bundle WITHOUT opening the drawer (Buy Now). */
+  buy: (bundleId: string) => void;
   setQuantity: (q: number) => void;
   setBundle: (bundleId: string) => void;
   clear: () => void;
@@ -55,6 +57,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       add: (bundleId, quantity = 1) => {
         persist({ bundleId, quantity: Math.min(10, Math.max(1, quantity)) });
         setOpen(true);
+      },
+      buy: (bundleId) => {
+        persist({ bundleId, quantity: 1 });
       },
       setQuantity: (q) => line && persist({ ...line, quantity: Math.min(10, Math.max(1, q)) }),
       setBundle: (bundleId) => persist({ bundleId, quantity: line?.quantity ?? 1 }),

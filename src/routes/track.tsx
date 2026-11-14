@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackOrder, type TrackedOrder } from "@/lib/store.functions";
-import { normalizePkPhone } from "@/lib/format";
+import { formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
 
 export const Route = createFileRoute("/track")({
   validateSearch: z.object({ order: z.string().max(20).optional() }),
@@ -37,6 +37,13 @@ function TrackPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<TrackedOrder | null>(null);
+
+  const reset = () => {
+    setOrder(null);
+    setOrderNumber("");
+    setPhone("");
+    setError(null);
+  };
 
   const run = async (num: string, ph: string) => {
     setError(null);
@@ -106,13 +113,25 @@ function TrackPage() {
                   type="tel"
                   inputMode="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(formatPkPhoneDisplay(e.target.value))}
+                  onBlur={() => {
+                    if (phone && !normalizePkPhone(phone))
+                      setError("Enter a valid mobile number (03XX XXXXXXX)");
+                  }}
                   placeholder="03XX XXXXXXX"
                   className="h-12 rounded-xl"
                 />
               </div>
             </div>
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
+            {error && (
+              <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+                <p className="font-medium text-destructive">We couldn&apos;t find that order.</p>
+                <p className="mt-1 text-muted-foreground">
+                  Double-check your order number and the mobile number you used at checkout, then
+                  try again — or message us on WhatsApp and we&apos;ll look it up for you.
+                </p>
+              </div>
+            )}
             <Button type="submit" variant="hero" size="xl" className="w-full" disabled={loading}>
               {loading ? (
                 <>
@@ -127,6 +146,11 @@ function TrackPage() {
           {order && (
             <div className="animate-fade-up mt-6 rounded-3xl border border-border/70 bg-card p-5 shadow-card sm:p-7">
               <OrderTimeline order={order} />
+              <div className="mt-6 flex justify-center">
+                <Button variant="line" onClick={reset}>
+                  Track another order
+                </Button>
+              </div>
             </div>
           )}
         </div>

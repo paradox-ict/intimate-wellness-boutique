@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { Check, Copy, Lock, PackageSearch } from "lucide-react";
 import { toast } from "sonner";
 import { StoreShell } from "@/components/store/StoreShell";
@@ -14,6 +15,7 @@ type LastOrder = {
 };
 
 export const Route = createFileRoute("/order-success")({
+  validateSearch: z.object({ order: z.string().max(20).optional() }),
   head: () => ({
     meta: [
       { title: "Thank You — Your Order Is Placed | Sukoon" },
@@ -32,16 +34,40 @@ export const Route = createFileRoute("/order-success")({
 });
 
 function SuccessPage() {
-  const [order, setOrder] = useState<LastOrder | null>(null);
+  const search = Route.useSearch();
+  const [stored, setStored] = useState<LastOrder | null>(null);
   const [loaded, setLoaded] = useState(false);
+
   useEffect(() => {
     try {
-      setOrder(JSON.parse(sessionStorage.getItem("sukoon-last-order") ?? "null"));
+      setStored(JSON.parse(sessionStorage.getItem("sukoon-last-order") ?? "null"));
     } catch {
       /* ignore */
     }
     setLoaded(true);
   }, []);
+
+  // The order number lives in the URL (?order=SK-XXXXXX) so it survives a
+  // refresh, a shared link, or a cleared tab — sessionStorage is only a
+  // fallback for the total / payment method details.
+  const orderNumber = search.order ?? stored?.orderNumber ?? null;
+  const order: LastOrder | null =
+    orderNumber && stored && stored.orderNumber === orderNumber
+      ? stored
+      : orderNumber
+        ? { orderNumber, total: 0, paymentMethod: "cod", phone: "" }
+        : null;
+  const hasDetails = !!stored && stored.orderNumber === orderNumber;
+
+  // Every Track link on the page — header, mobile menu, footer — must carry
+  // the order number, not just the main Track button.
+  useEffect(() => {
+    if (!orderNumber) return;
+    const href = `/track?order=${encodeURIComponent(orderNumber)}`;
+    document
+      .querySelectorAll('header a[href="/track"], footer a[href="/track"]')
+      .forEach((a) => a.setAttribute("href", href));
+  }, [orderNumber]);
 
   return (
     <StoreShell>
@@ -54,9 +80,13 @@ function SuccessPage() {
             Thank you{order ? "" : "!"}
           </h1>
           {loaded && !order && (
-            <p className="mt-4 text-muted-foreground">
-              Your order was placed. Use the Track order page to see its status.
-            </p>
+            <div className="mt-6 rounded-3xl border border-border/70 bg-card p-6 text-left shadow-card">
+              <p className="font-medium">We couldn&apos;t find your order number on this page.</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                If you just placed an order, your order number is in your confirmation — or open
+                the Track order page and enter it there with your mobile number.
+              </p>
+            </div>
           )}
           {order && (
             <div className="animate-fade-up [animation-delay:250ms]">
@@ -73,19 +103,21 @@ function SuccessPage() {
                   type="button"
                   onClick={() => {
                     navigator.clipboard?.writeText(order.orderNumber);
-                    toast.success("Copied");
+                    toast.success("✓ Copied — save it to track your order.");
                   }}
                   className="mt-1 flex items-center gap-2 font-display text-3xl hover:text-primary"
                 >
                   {order.orderNumber} <Copy className="h-5 w-5" />
                 </button>
                 <p className="mt-1 text-sm text-muted-foreground">Save it to track your order.</p>
-                <div className="mt-5 flex justify-between border-t border-border pt-4 text-sm">
-                  <span className="text-muted-foreground">
-                    {order.paymentMethod === "cod" ? "Pay on delivery" : "Paid via Easypaisa"}
-                  </span>
-                  <span className="font-semibold">{formatPKR(order.total)}</span>
-                </div>
+                {hasDetails && (
+                  <div className="mt-5 flex justify-between border-t border-border pt-4 text-sm">
+                    <span className="text-muted-foreground">
+                      {order.paymentMethod === "cod" ? "Pay on delivery" : "Paid via Easypaisa"}
+                    </span>
+                    <span className="font-semibold">{formatPKR(order.total)}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}

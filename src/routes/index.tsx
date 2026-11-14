@@ -11,7 +11,6 @@ import { Privacy } from "@/components/store/landing/Privacy";
 import { Reviews } from "@/components/store/landing/Reviews";
 import { Faq } from "@/components/store/landing/Faq";
 import { FinalCta } from "@/components/store/landing/FinalCta";
-import { StickyBuyBar } from "@/components/store/landing/StickyBuyBar";
 import { storefrontQuery } from "@/lib/storefront-query";
 
 export const Route = createFileRoute("/")({
@@ -51,7 +50,6 @@ function Index() {
       <Reviews />
       <Faq />
       <FinalCta />
-      <StickyBuyBar />
     </StoreShell>
   );
 }

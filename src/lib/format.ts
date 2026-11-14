@@ -2,6 +2,13 @@ export function formatPKR(amount: number) {
   return `Rs ${Math.round(amount).toLocaleString("en-PK")}`;
 }
 
+/** Formats digits as the user types: 0300 1234567. Keeps at most 11 digits. */
+export function formatPkPhoneDisplay(input: string): string {
+  const d = input.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 4) return d;
+  return `${d.slice(0, 4)} ${d.slice(4)}`;
+}
+
 /** Normalises Pakistani mobile numbers to 03XXXXXXXXX. Returns null when invalid. */
 export function normalizePkPhone(input: string): string | null {
   let d = input.replace(/\D/g, "");

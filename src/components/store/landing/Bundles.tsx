@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Check, Sparkles, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -143,6 +144,9 @@ export function Bundles() {
           <p className="text-xs text-muted-foreground">
             Cash on Delivery · Easypaisa · 2–4 working days nationwide
           </p>
+          <Link to="/product" className="text-sm font-medium text-primary hover:underline">
+            See full product details →
+          </Link>
         </Reveal>
       </div>
     </section>

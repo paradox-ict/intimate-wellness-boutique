@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/lib/cart";
 import { storefrontQuery } from "@/lib/storefront-query";
 import { placeOrder } from "@/lib/store.functions";
-import { computeTotals, formatPKR, normalizePkPhone } from "@/lib/format";
+import { computeTotals, formatPKR, formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
 import { compressImage } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import productImg from "@/assets/product-pack.jpg";
@@ -105,12 +105,24 @@ function CheckoutPage() {
   const bundle = data.bundles.find((b) => b.id === line?.bundleId) ?? null;
   const qty = line?.quantity ?? 1;
   const totals = bundle ? computeTotals(bundle, qty, data.settings.delivery_fee) : null;
+  const waNumber = data.settings.support_whatsapp.replace(/\D/g, "").replace(/^0/, "");
 
   const set =
     (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((f) => ({ ...f, [k]: e.target.value }));
       setErrors((er) => ({ ...er, [k]: undefined }));
     };
+
+  // Phone formats live as the user types: 0300 1234567.
+  const setPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((f) => ({ ...f, phone: formatPkPhoneDisplay(e.target.value) }));
+    setErrors((er) => ({ ...er, phone: undefined }));
+  };
+  const validatePhone = () => {
+    if (form.phone && !normalizePkPhone(form.phone)) {
+      setErrors((er) => ({ ...er, phone: "Enter a valid mobile number (03XX XXXXXXX)" }));
+    }
+  };
 
   const onFile = async (file: File | undefined) => {
     if (!file) return;
@@ -124,6 +136,13 @@ function CheckoutPage() {
     }
     try {
       const c = await compressImage(file);
+      // Receipts over 5 MB are rejected server-side — catch it here in plain
+      // language instead of failing at submit.
+      const bytes = Math.round((c.base64.length * 3) / 4);
+      if (bytes > 5 * 1024 * 1024) {
+        toast.error("That receipt is too large (over 5 MB) — please use a smaller screenshot.");
+        return;
+      }
       setProof({ ...c, name: file.name });
       setErrors((er) => ({ ...er, payment: undefined }));
     } catch {
@@ -178,7 +197,9 @@ function CheckoutPage() {
       }
       sessionStorage.setItem("sukoon-last-order", JSON.stringify(res));
       clear();
-      navigate({ to: "/order-success" });
+      // Order number in the URL so the success page shows it even after a
+      // refresh or when the link is shared.
+      navigate({ to: "/order-success", search: { order: res.orderNumber } });
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong. Please check your details and try again.");
@@ -360,7 +381,8 @@ function CheckoutPage() {
                     inputMode="tel"
                     autoComplete="tel"
                     value={form.phone}
-                    onChange={set("phone")}
+                    onChange={setPhone}
+                    onBlur={validatePhone}
                     aria-invalid={!!errors.phone}
                     placeholder="03XX XXXXXXX"
                     className="h-12 rounded-xl"
@@ -546,6 +568,45 @@ function CheckoutPage() {
                     )}
                   </div>
                 </div>
+              </div>
+            </fieldset>
+
+            <fieldset className="animate-fade-up rounded-3xl border border-border/70 bg-card p-5 shadow-card sm:p-7 [animation-delay:200ms]">
+              <legend className="sr-only">Review your order</legend>
+              <StepTitle n={3} title="Review your order" />
+              <div className="mt-6 space-y-2 text-sm">
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Your pack</span>
+                  <span className="text-right font-medium">
+                    {bundle?.name} × {qty} ({totals?.pieces} applicators)
+                  </span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Delivery</span>
+                  <span className="text-right font-medium">
+                    {totals?.delivery === 0 ? "Free" : formatPKR(totals?.delivery ?? 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-border pt-3 text-base">
+                  <span className="font-medium">Total to pay</span>
+                  <span className="font-display text-xl">{formatPKR(totals?.total ?? 0)}</span>
+                </div>
+                <p className="pt-2 text-muted-foreground">
+                  {method === "cod"
+                    ? "Pay this amount in cash when your parcel arrives. We'll call to confirm before dispatch."
+                    : "You paid by Easypaisa — we'll verify your payment and confirm your order shortly."}
+                </p>
+                <p className="text-muted-foreground">
+                  Need help with your order?{" "}
+                  <a
+                    href={`https://wa.me/92${waNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    Message us on WhatsApp
+                  </a>
+                </p>
               </div>
             </fieldset>
 

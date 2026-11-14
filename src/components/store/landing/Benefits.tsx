@@ -2,7 +2,7 @@ import { Droplets, Flower2, ShieldPlus, Sparkles, Wind, HeartHandshake, Waves } 
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "./SectionHeading";
 
-const BENEFITS = [
+export const BENEFITS = [
   {
     icon: ShieldPlus,
     title: "Antibacterial",
