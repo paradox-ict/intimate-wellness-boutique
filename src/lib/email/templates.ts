@@ -59,7 +59,7 @@ export function esc(v: string | null | undefined): string {
     .replace(/'/g, "&#39;");
 }
 
-const LOGO_URL = `${SITE_URL}/images/rosecare-logo-white.png`;
+const LOGO_URL = `${SITE_URL}/images/rosecare-logo-email.png`;
 const TRACK_URL = (orderNumber: string, phone: string) =>
   `${SITE_URL}/track?order=${encodeURIComponent(orderNumber)}&phone=${encodeURIComponent(phone)}`;
 

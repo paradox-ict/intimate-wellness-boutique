@@ -61,12 +61,20 @@ describe("RoseCare logo assets", () => {
       "rosecare-logo-black.png",
       "rosecare-mark-white.png",
       "rosecare-mark-black.png",
+      "rosecare-logo-email.png",
     ]) {
       const buf = fs.readFileSync(path.join(repoRoot, "public", "images", name));
       expect(buf.length).toBeGreaterThan(1000);
       // PNG magic bytes.
       expect(buf.subarray(0, 4)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
     }
+  });
+
+  it("the email logo is small enough to load fast", () => {
+    const buf = fs.readFileSync(
+      path.join(repoRoot, "public", "images", "rosecare-logo-email.png"),
+    );
+    expect(buf.length).toBeLessThan(120_000);
   });
 
   it("the old watercolor rose-mark is gone from the repo", () => {
@@ -82,10 +90,10 @@ describe("RoseCare logo assets", () => {
     }
   });
 
-  it("header uses the white mark, footer the black mark, email the white lockup", () => {
+  it("header uses the white mark, footer the black mark, email the transparent email lockup", () => {
     expect(read("src/components/store/Logo.tsx")).toContain("/images/rosecare-mark-white.png");
     expect(read("src/components/store/Logo.tsx")).toContain("/images/rosecare-mark-black.png");
-    expect(read("src/lib/email/templates.ts")).toContain("/images/rosecare-logo-white.png");
+    expect(read("src/lib/email/templates.ts")).toContain("/images/rosecare-logo-email.png");
     expect(read("src/routes/index.tsx")).toContain("/images/rosecare-logo-white.png");
   });
 
