@@ -40,7 +40,7 @@ export function SiteHeader() {
         scrolled ? "border-b border-border/60 bg-background/80 backdrop-blur-xl" : "bg-transparent",
       )}
     >
-      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-5 md:h-20 md:grid-cols-[auto_1fr_auto] md:px-8">
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4 sm:gap-4 sm:px-5 md:h-20 md:grid-cols-[auto_1fr_auto] md:px-8">
         <Logo />
         <nav className="hidden justify-center gap-8 md:flex" aria-label="Main">
           {NAV.map((n) => (
@@ -54,26 +54,27 @@ export function SiteHeader() {
             </a>
           ))}
         </nav>
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           <Link
             to="/track"
             className="hidden rounded-full px-4 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground sm:inline-flex"
           >
             Track order
           </Link>
-          {/* Compact Track pill for phones, where the text link is hidden. */}
+          {/* Compact Track pill for phones, where the text link is hidden.
+              Icon-only on the narrowest phones so the logo always fits. */}
           <Link
             to="/track"
-            className="inline-flex items-center gap-1.5 rounded-full border border-foreground/10 bg-card/70 px-3 py-2 text-xs font-semibold backdrop-blur transition-colors hover:border-primary/40 hover:text-primary sm:hidden"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-foreground/10 bg-card/70 px-3 py-2 text-xs font-semibold backdrop-blur transition-colors hover:border-primary/40 hover:text-primary max-[379px]:px-2.5 sm:hidden"
             aria-label="Track order"
           >
-            <PackageSearch className="h-4 w-4" />
-            Track
+            <PackageSearch className="h-4 w-4 shrink-0" />
+            <span className="max-[379px]:hidden">Track</span>
           </Link>
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="relative grid h-11 w-11 place-items-center rounded-full border border-foreground/10 bg-card/70 backdrop-blur transition-all hover:border-primary/40 hover:text-primary"
+            className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full border border-foreground/10 bg-card/70 backdrop-blur transition-all hover:border-primary/40 hover:text-primary sm:h-11 sm:w-11"
             aria-label={`Open bag${count ? `, ${count} item` : ""}`}
           >
             <ShoppingBag className="h-5 w-5" />
@@ -90,7 +91,7 @@ export function SiteHeader() {
           </button>
           <button
             type="button"
-            className="grid h-11 w-11 place-items-center rounded-full md:hidden"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full md:hidden sm:h-11 sm:w-11"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Menu"
             aria-expanded={mobileOpen}

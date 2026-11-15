@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Phone, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { storefrontQuery } from "@/lib/storefront-query";
 import { computeTotals, formatPKR } from "@/lib/format";
+import { WHATSAPP_URL } from "@/lib/whatsapp";
+import { useStickyBarVisible } from "@/lib/useStickyBarVisible";
+import { WhatsAppIcon } from "@/components/store/WhatsAppIcon";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,20 +22,8 @@ export function StickyBuyBar() {
   const { data } = useSuspenseQuery(storefrontQuery);
   const { line, setOpen } = useCart();
   const navigate = useNavigate();
-  const [show, setShow] = useState(false);
+  const show = useStickyBarVisible();
   const barRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const bundles = document.getElementById("bundles");
-      const r = bundles?.getBoundingClientRect();
-      const inBundles = r ? r.top < window.innerHeight && r.bottom > 0 : false;
-      setShow(window.scrollY > 600 && !inBundles);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   // Body clearance measured from the bar's real height, so the bar never
   // covers page content when it slides in.
@@ -47,7 +38,6 @@ export function StickyBuyBar() {
   const bundle = data.bundles.find((b) => b.id === line?.bundleId) ?? null;
   const totals =
     bundle && line ? computeTotals(bundle, line.quantity, data.settings.delivery_fee) : null;
-  const callNumber = (data.settings.support_whatsapp || "03115778995").replace(/\s/g, "");
 
   const goCheckout = () => {
     if (!line) {
@@ -69,10 +59,14 @@ export function StickyBuyBar() {
     >
       <div className="flex items-center gap-2 rounded-full border border-border/60 bg-card/90 p-2 shadow-soft backdrop-blur-xl">
         <a
-          href={`tel:${callNumber}`}
-          className="flex shrink-0 items-center gap-1.5 rounded-full bg-secondary px-3.5 py-2.5 text-sm font-semibold text-secondary-foreground"
+          href={WHATSAPP_URL}
+          target="_blank"
+          rel="noopener"
+          aria-label="Chat with RoseCare on WhatsApp"
+          className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#25D366] px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1eb856] max-[379px]:px-2.5"
         >
-          <Phone className="h-4 w-4" /> Call
+          <WhatsAppIcon className="h-4 w-4 shrink-0" />
+          <span className="max-[379px]:hidden">WhatsApp</span>
         </a>
         <button
           type="button"

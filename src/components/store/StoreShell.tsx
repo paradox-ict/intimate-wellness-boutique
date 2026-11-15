@@ -4,6 +4,7 @@ import { SiteHeader } from "./SiteHeader";
 import { SiteFooter } from "./SiteFooter";
 import { CartDrawer } from "./CartDrawer";
 import { StickyBuyBar } from "./landing/StickyBuyBar";
+import { FloatingWhatsApp } from "./FloatingWhatsApp";
 
 export function StoreShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
@@ -21,6 +22,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <SiteFooter />
       <CartDrawer />
       {!hideBar && <StickyBuyBar />}
+      <FloatingWhatsApp />
     </div>
   );
 }
