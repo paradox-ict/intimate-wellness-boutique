@@ -26,15 +26,19 @@ export const FAQS = [
   },
   {
     q: "How does Easypaisa payment work?",
-    a: "At checkout choose Easypaisa and send the full total — product price plus Rs 300 delivery — to our Easypaisa account, then enter your transaction ID and/or upload the receipt screenshot. We verify and confirm your order, usually within a few hours.",
+    a: "At checkout choose Easypaisa and send the full total — product price plus Rs 300 delivery (delivery is free on the Trio pack, so you pay just the pack price) — to our Easypaisa account, then enter your transaction ID and/or upload the receipt screenshot. We verify and confirm your order, usually within a few hours.",
   },
   {
     q: "Can I pay on delivery?",
-    a: "Yes. Cash on Delivery is available all over Pakistan. To confirm your order, first send the Rs 400 delivery charge via Easypaisa — then pay only the product price in cash when your parcel arrives.",
+    a: "Yes. Cash on Delivery is available all over Pakistan. To confirm your order, first send a Rs 400 advance via Easypaisa — on most packs this Rs 400 is the delivery charge itself; on the Trio pack (free delivery) it comes off the pack price instead. Then pay the rest in cash when your parcel arrives.",
   },
   {
     q: "Why do I pay Rs 400 in advance for COD?",
-    a: "The Rs 400 is the delivery charge itself, not an extra fee — it is the cost of getting your parcel to you. Sending it in advance through Easypaisa confirms your order is genuine, so we can pack and dispatch it. You then pay only the product price in cash on delivery, nothing more.",
+    a: "The Rs 400 is a confirmation advance — it proves the order is genuine, so we can pack and dispatch it. It is never an extra fee: on most packs it IS the delivery charge, and on the Trio pack (free delivery) it comes off the pack price, so your total stays Rs 4,850. You only ever pay the rest in cash when your parcel arrives, and your order is confirmed only after we verify the advance.",
+  },
+  {
+    q: "Is delivery really free on Trio?",
+    a: "Yes — the Trio pack ships free, with no delivery charge at all. The Rs 400 advance still applies (every COD order needs it to confirm), but it comes off the pack price, so you still pay Rs 4,850 total: Rs 400 now via Easypaisa, and Rs 4,450 in cash on delivery.",
   },
   {
     q: "How long does delivery take?",

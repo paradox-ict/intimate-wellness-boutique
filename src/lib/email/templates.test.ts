@@ -25,6 +25,7 @@ const sampleOrder: OrderEmailData = {
   delivery_fee: 400,
   total: 2350,
   payment_method: "cod",
+  cod_advance: 400,
   payment_status: "pending_verification",
   status: "pending",
   easypaisa_txn_id: "5278263737",
@@ -52,7 +53,7 @@ describe("order confirmation email", () => {
     expect(e.html).toContain("Cash on Delivery");
     // The Rs 400 advance is due now via Easypaisa; only the product price
     // is due in cash on delivery.
-    expect(e.html).toContain("Pay now (Easypaisa advance)");
+    expect(e.html).toContain("Advance paid now (Easypaisa)");
     expect(e.html).toContain("Rs 400");
     expect(e.html).toContain("Pay on delivery (cash)");
     expect(e.html).toContain("Rs 1,950");
@@ -64,10 +65,78 @@ describe("order confirmation email", () => {
     expect(e.html).toContain("https://rosecare.store/images/rose-mark.png");
     expect(e.text).toContain("SK-ABC123");
     expect(e.text).toContain("Rs 2,350");
-    expect(e.text).toContain("Pay now (Easypaisa advance): Rs 400");
+    expect(e.text).toContain("Advance paid now (Easypaisa): Rs 400");
     expect(e.text).toContain("Pay on delivery (cash): Rs 1,950");
     expect(e.text).toContain("https://rosecare.store/track?order=SK-ABC123");
     expect(e.text).not.toContain("<div");
+  });
+
+  it("free-delivery Trio COD: total stays the pack price, Rs 400 advance comes off it", () => {
+    const trio: OrderEmailData = {
+      ...sampleOrder,
+      bundle_name: "Trio",
+      bundle_pieces: 3,
+      quantity: 1,
+      total_pieces: 3,
+      subtotal: 4850,
+      delivery_fee: 0,
+      total: 4850,
+      cod_advance: 400,
+    };
+    const e = orderConfirmationEmail(trio, easypaisa);
+    expect(e.html).toContain("Rs 4,850");
+    // Delivery is Free — and the advance is Rs 400, never Rs 0.
+    expect(e.html).toContain("Free");
+    expect(e.html).toContain("Advance (deducted from pack price)");
+    expect(e.html).toContain("Rs 400");
+    expect(e.html).not.toContain("Rs 0");
+    expect(e.html).toContain("Pay on delivery (cash)");
+    expect(e.html).toContain("Rs 4,450");
+    expect(e.html).toContain("comes off your pack price");
+    expect(e.text).toContain("Delivery: Free");
+    expect(e.text).toContain("Advance (deducted from pack price): Rs 400");
+    expect(e.text).toContain("Pay on delivery (cash): Rs 4,450");
+    expect(e.text).toContain("Total: Rs 4,850");
+  });
+
+  it("free-delivery Trio Easypaisa: no delivery fee, full pack price paid now", () => {
+    const e = orderConfirmationEmail(
+      {
+        ...sampleOrder,
+        bundle_name: "Trio",
+        bundle_pieces: 3,
+        quantity: 1,
+        total_pieces: 3,
+        subtotal: 4850,
+        delivery_fee: 0,
+        total: 4850,
+        payment_method: "easypaisa",
+        cod_advance: 400,
+      },
+      easypaisa,
+    );
+    expect(e.html).toContain("Free");
+    expect(e.html).toContain("Paid now (Easypaisa)");
+    expect(e.html).toContain("Rs 4,850");
+    expect(e.text).toContain("Delivery: Free");
+    expect(e.text).toContain("Paid now (Easypaisa): Rs 4,850");
+  });
+
+  it("track links carry the order number AND the phone, so the lookup auto-runs", () => {
+    const e = orderConfirmationEmail(sampleOrder, easypaisa);
+    expect(e.html).toContain(
+      "https://rosecare.store/track?order=SK-ABC123&phone=03001234567",
+    );
+    expect(e.text).toContain(
+      "Track your order: https://rosecare.store/track?order=SK-ABC123&phone=03001234567",
+    );
+    const s = orderStatusEmail(sampleOrder, "confirmed");
+    expect(s.html).toContain(
+      "https://rosecare.store/track?order=SK-ABC123&phone=03001234567",
+    );
+    expect(s.text).toContain(
+      "Track your order: https://rosecare.store/track?order=SK-ABC123&phone=03001234567",
+    );
   });
 
   it("Easypaisa order shows the account details and the full total paid now", () => {
@@ -90,6 +159,15 @@ describe("order confirmation email", () => {
     expect(e.html).toContain("verifying your payment");
     expect(e.text).toContain("03115778995");
     expect(e.text).toContain("Paid now (Easypaisa): Rs 2,250");
+  });
+
+  it("order-number block looks like a copy button with a tap-to-copy hint", () => {
+    const e = orderConfirmationEmail(sampleOrder, easypaisa);
+    expect(e.html).toContain("Tap to copy");
+    // The hint sits OUTSIDE the selectable value, so a tap copies only
+    // the order number — never the hint text with it.
+    expect(e.html).toContain("user-select:all");
+    expect(e.html).toContain("border:1px dashed #c2185b");
   });
 
   it("never renders raw user HTML", () => {
@@ -139,6 +217,25 @@ describe("order status emails", () => {
     expect(e.text).toContain("Pay on delivery Rs 1,950");
   });
 
+  it("confirmed email for free-delivery Trio COD: balance is total − 400, not the subtotal", () => {
+    const trio: OrderEmailData = {
+      ...sampleOrder,
+      bundle_name: "Trio",
+      bundle_pieces: 3,
+      quantity: 1,
+      total_pieces: 3,
+      subtotal: 4850,
+      delivery_fee: 0,
+      total: 4850,
+      cod_advance: 400,
+    };
+    const e = orderStatusEmail(trio, "confirmed");
+    expect(e.html).toContain("Rs 400 advance has been verified");
+    expect(e.html).toContain("Pay on delivery Rs 4,450");
+    expect(e.html).toContain("came off your pack price");
+    expect(e.text).toContain("Pay on delivery Rs 4,450");
+  });
+
   it("rejected email for COD names the advance", () => {
     const e = orderStatusEmail(
       { ...sampleOrder, payment_status: "rejected", admin_note: "Advance not found" },
@@ -163,6 +260,9 @@ describe("order status emails", () => {
       "shipped",
     );
     expect(withTracking.html).toContain("TCS123456");
+    // The tracking block looks like a copy button: tap selects the number.
+    expect(withTracking.html).toContain("Tap to copy");
+    expect(withTracking.html).toContain("user-select:all");
     const withoutTracking = orderStatusEmail(sampleOrder, "shipped");
     expect(withoutTracking.html).not.toContain("Courier tracking number");
   });
@@ -207,5 +307,27 @@ describe("owner new-order alert", () => {
       easypaisa,
     );
     expect(noProof.html).toContain("No receipt screenshot");
+  });
+
+  it("free-delivery Trio COD alert: advance Rs 400 off the price, collect Rs 4,450", () => {
+    const trio: OrderEmailData = {
+      ...sampleOrder,
+      bundle_name: "Trio",
+      bundle_pieces: 3,
+      quantity: 1,
+      total_pieces: 3,
+      subtotal: 4850,
+      delivery_fee: 0,
+      total: 4850,
+      cod_advance: 400,
+    };
+    const e = ownerNewOrderEmail(trio, easypaisa);
+    expect(e.subject).toContain("Rs 4,850");
+    expect(e.html).toContain("Rs 400 advance");
+    expect(e.html).toContain("comes off the pack price");
+    expect(e.html).toContain("Rs 4,450");
+    expect(e.html).not.toContain("Rs 0");
+    expect(e.text).toContain("Rs 400 advance");
+    expect(e.text).toContain("Rs 4,450");
   });
 });

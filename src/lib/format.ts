@@ -18,7 +18,7 @@ export function normalizePkPhone(input: string): string | null {
   return /^03\d{9}$/.test(d) ? d : null;
 }
 
-export type BundleForPricing = { price: number; pieces: number };
+export type BundleForPricing = { price: number; pieces: number; free_delivery: boolean };
 
 export type DeliveryFees = { cod: number; easypaisa: number };
 
@@ -26,11 +26,16 @@ export type PaymentMethod = "cod" | "easypaisa";
 
 /**
  * Mirrors the server-side pricing in the place_order database function.
- * The delivery fee depends on how the customer pays, flat per order:
- * COD pays Rs 400 now via Easypaisa (that IS the delivery charge) and the
- * product price in cash on delivery; Easypaisa prepaid pays Rs 300 delivery
- * as part of the full total up front. Free delivery is retired — every pack
- * pays the fee for its payment method.
+ * The delivery fee depends on how the customer pays, flat per order — and
+ * on the bundle's free_delivery flag:
+ * - Free-delivery pack (Trio): no delivery fee at all. COD still needs the
+ *   Rs 400 Easypaisa advance to confirm, but it is DEDUCTED FROM THE PACK
+ *   PRICE — the total stays the pack price, balance = total − 400.
+ * - Other packs: COD total = price + Rs 400 (the Rs 400 IS the delivery
+ *   charge, paid now via Easypaisa; balance = product price in cash on
+ *   delivery); Easypaisa prepaid total = price + Rs 300, all due now.
+ * Unified: COD advanceDue is always the COD fee (Rs 400), balanceDue =
+ * total − advanceDue; Easypaisa advanceDue is the full total, balance 0.
  */
 export function computeTotals(
   bundle: BundleForPricing,
@@ -39,7 +44,7 @@ export function computeTotals(
   method: PaymentMethod,
 ) {
   const subtotal = bundle.price * quantity;
-  const delivery = method === "cod" ? fees.cod : fees.easypaisa;
+  const delivery = bundle.free_delivery ? 0 : method === "cod" ? fees.cod : fees.easypaisa;
   const total = subtotal + delivery;
   return {
     subtotal,
@@ -47,9 +52,9 @@ export function computeTotals(
     total,
     pieces: bundle.pieces * quantity,
     // Amount the customer must send via Easypaisa right now to confirm.
-    advanceDue: method === "cod" ? delivery : total,
+    advanceDue: method === "cod" ? fees.cod : total,
     // Amount left to pay in cash when the parcel arrives (COD only).
-    balanceDue: method === "cod" ? subtotal : 0,
+    balanceDue: method === "cod" ? total - fees.cod : 0,
   };
 }
 

@@ -128,7 +128,10 @@ export function Bundles() {
                       </span>
                     )}
                     <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
-                      <Truck className="h-3 w-3" /> Delivery Rs 300 Easypaisa · Rs 400 COD
+                      <Truck className="h-3 w-3" />{" "}
+                      {b.free_delivery
+                        ? "Free delivery · Rs 400 advance comes off your pack price"
+                        : "Delivery Rs 300 Easypaisa · Rs 400 COD advance"}
                     </span>
                   </div>
                   {/* Direct Buy Now on every card — buys this bundle straight

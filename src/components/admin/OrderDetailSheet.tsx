@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { CheckCircle2, Copy, ExternalLink, Loader2, MapPin, Phone, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyOrderStatus } from "@/lib/store.functions";
-import { orderEventsQuery, type Order } from "@/lib/admin-queries";
+import { orderEventsQuery, adminSettingsQuery, type Order } from "@/lib/admin-queries";
 import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, formatPKR } from "@/lib/format";
 import { copyText } from "@/lib/utils";
 import {
@@ -48,6 +48,18 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState<null | "save" | "approve" | "reject">(null);
   const events = useQuery({ ...orderEventsQuery(order?.id ?? ""), enabled: !!order });
+  // The COD fee from settings (Rs 400). The advance is NOT the delivery
+  // fee: on a free-delivery pack delivery_fee is 0, but the advance is
+  // still Rs 400 — deducted from the pack price — and the balance is
+  // total − 400.
+  const { data: settings } = useQuery(adminSettingsQuery);
+  const codFee = settings?.cod_delivery_fee ?? 400;
+  // These run before the `if (!order)` guard below, so they use optional
+  // chaining — they're only rendered once an order is present.
+  const isCod = order?.payment_method === "cod";
+  const freeDelivery = (order?.delivery_fee ?? 0) === 0;
+  const advanceDue = isCod ? codFee : (order?.total ?? 0);
+  const balanceDue = isCod ? (order?.total ?? 0) - codFee : 0;
 
   useEffect(() => {
     if (!order) return;
@@ -220,17 +232,21 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
             </div>
             <div className="mt-1 flex justify-between text-sm text-muted-foreground">
               <span>Delivery</span>
-              <span>{formatPKR(order.delivery_fee)}</span>
+              <span>{freeDelivery ? "Free" : formatPKR(order.delivery_fee)}</span>
             </div>
             {order.payment_method === "cod" && (
               <>
                 <div className="mt-1 flex justify-between text-sm text-muted-foreground">
-                  <span>Advance paid (Easypaisa)</span>
-                  <span>{formatPKR(order.delivery_fee)}</span>
+                  <span>
+                    {freeDelivery
+                      ? "Advance (deducted from pack price)"
+                      : "Advance paid (Easypaisa)"}
+                  </span>
+                  <span>{formatPKR(advanceDue)}</span>
                 </div>
                 <div className="mt-1 flex justify-between text-sm text-muted-foreground">
                   <span>Balance on delivery (cash)</span>
-                  <span>{formatPKR(order.subtotal)}</span>
+                  <span>{formatPKR(balanceDue)}</span>
                 </div>
               </>
             )}
@@ -271,10 +287,14 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">
-                  {order.payment_method === "cod" ? "Advance expected" : "Expected amount"}
+                  {order.payment_method === "cod"
+                    ? freeDelivery
+                      ? "Advance (deducted from price)"
+                      : "Advance expected"
+                    : "Expected amount"}
                 </dt>
                 <dd className="font-semibold text-primary">
-                  {formatPKR(order.payment_method === "cod" ? order.delivery_fee : order.total)}
+                  {formatPKR(order.payment_method === "cod" ? advanceDue : order.total)}
                 </dd>
               </div>
               <div>
@@ -284,7 +304,7 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
               {order.payment_method === "cod" && (
                 <div>
                   <dt className="text-xs text-muted-foreground">Balance on delivery (cash)</dt>
-                  <dd className="font-semibold">{formatPKR(order.subtotal)}</dd>
+                  <dd className="font-semibold">{formatPKR(balanceDue)}</dd>
                 </div>
               )}
             </dl>

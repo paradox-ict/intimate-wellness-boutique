@@ -282,7 +282,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         .maybeSingle();
       const { data: settings } = await supabaseAdmin
         .from("store_settings")
-        .select("easypaisa_account_name, easypaisa_number")
+        .select("easypaisa_account_name, easypaisa_number, cod_delivery_fee")
         .eq("id", 1)
         .maybeSingle();
       if (full) {
@@ -321,7 +321,7 @@ export const placeOrder = createServerFn({ method: "POST" })
           "@/lib/email/resend"
         );
         await sendOrderPlacedEmails({
-          order: orderRowToEmailData(full),
+          order: orderRowToEmailData(full, settings?.cod_delivery_fee ?? 400),
           easypaisa: {
             accountName: settings?.easypaisa_account_name ?? "",
             accountNumber: settings?.easypaisa_number ?? "",
@@ -364,6 +364,12 @@ export type TrackedOrder = {
   subtotal: number;
   delivery_fee: number;
   total: number;
+  // Server-computed split, so the timeline never guesses: COD advance is
+  // always the COD fee (Rs 400) — on a free-delivery pack it comes off the
+  // pack price, so delivery_fee is 0 but the advance is still Rs 400 and
+  // the balance is total − 400. Easypaisa pays the full total up front.
+  advance_due: number;
+  balance_due: number;
   city: string;
   tracking_number: string | null;
   created_at: string;
@@ -386,13 +392,21 @@ export const trackOrder = createServerFn({ method: "POST" })
       .eq("phone", data.phone)
       .maybeSingle();
     if (!order) return { order: null };
+    const { data: settings } = await supabaseAdmin
+      .from("store_settings")
+      .select("cod_delivery_fee")
+      .eq("id", 1)
+      .maybeSingle();
+    const codFee = settings?.cod_delivery_fee ?? 400;
+    const advance_due = order.payment_method === "cod" ? codFee : order.total;
+    const balance_due = order.payment_method === "cod" ? order.total - codFee : 0;
     const { data: events } = await supabaseAdmin
       .from("order_events")
       .select("status,payment_status,note,created_at")
       .eq("order_id", order.id)
       .order("created_at");
     const { id: _id, ...rest } = order;
-    return { order: { ...rest, events: events ?? [] } };
+    return { order: { ...rest, advance_due, balance_due, events: events ?? [] } };
   });
 
 // ---------------------------------------------------------------------------
@@ -448,10 +462,15 @@ export const notifyOrderStatus = createServerFn({ method: "POST" })
       .eq("id", data.orderId)
       .maybeSingle();
     if (!order || !order.email) return { ok: false as const };
+    const { data: settings } = await supabaseAdmin
+      .from("store_settings")
+      .select("cod_delivery_fee")
+      .eq("id", 1)
+      .maybeSingle();
     const { deriveStatusKind, orderRowToEmailData, sendStatusEmailForOrder } = await import(
       "@/lib/email/resend"
     );
-    const emailData = orderRowToEmailData(order);
+    const emailData = orderRowToEmailData(order, settings?.cod_delivery_fee ?? 400);
     const kind = deriveStatusKind(emailData, data.prevStatus, data.prevPaymentStatus);
     if (!kind) return { ok: true as const, sent: false as const, kind: null };
     if (hitRateLimit(`notify-email:${emailData.email.toLowerCase()}`, 5, 60 * 60 * 1000)) {

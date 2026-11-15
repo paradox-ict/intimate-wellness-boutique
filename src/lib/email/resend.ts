@@ -68,8 +68,11 @@ export type SendEmailResult = { ok: true; id?: string } | { ok: false; error: st
 
 export type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
 
-/** Map a database order row to the shape the email templates need. */
-export function orderRowToEmailData(row: OrderRow): OrderEmailData {
+/** Map a database order row to the shape the email templates need.
+ *  codAdvance is the COD fee from store_settings (Rs 400) — passed by the
+ *  caller when it has the settings row; it defaults to 400 so a missing
+ *  settings read can never zero out the advance in an email. */
+export function orderRowToEmailData(row: OrderRow, codAdvance = 400): OrderEmailData {
   return {
     order_number: row.order_number,
     customer_name: row.customer_name,
@@ -86,6 +89,7 @@ export function orderRowToEmailData(row: OrderRow): OrderEmailData {
     delivery_fee: row.delivery_fee,
     total: row.total,
     payment_method: row.payment_method,
+    cod_advance: codAdvance,
     payment_status: row.payment_status,
     status: row.status,
     easypaisa_txn_id: row.easypaisa_txn_id,

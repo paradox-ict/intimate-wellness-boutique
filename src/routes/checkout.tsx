@@ -204,10 +204,16 @@ function CheckoutPage() {
       }
       // The success page's breakdown (advance now / balance on delivery)
       // comes from the same totals shown here — the server is the source of
-      // truth for the charge, these are display only.
+      // truth for the charge, these are display only. freeDelivery tells
+      // the success page the advance came off the pack price.
       sessionStorage.setItem(
         "sukoon-last-order",
-        JSON.stringify({ ...res, advanceDue: totals.advanceDue, balanceDue: totals.balanceDue }),
+        JSON.stringify({
+          ...res,
+          advanceDue: totals.advanceDue,
+          balanceDue: totals.balanceDue,
+          freeDelivery: bundle.free_delivery,
+        }),
       );
       clear();
       // Order number in the URL so the success page shows it even after a
@@ -307,7 +313,9 @@ function CheckoutPage() {
         {method === "cod" && (
           <>
             <div className="flex justify-between text-sm">
-              <dt className="text-muted-foreground">Pay now (Easypaisa advance)</dt>
+              <dt className="text-muted-foreground">
+                Pay now (Easypaisa advance{bundle.free_delivery ? " · off pack price" : ""})
+              </dt>
               <dd className="font-semibold tabular-nums">{formatPKR(totals.advanceDue)}</dd>
             </div>
             <div className="flex justify-between text-sm">
@@ -486,6 +494,61 @@ function CheckoutPage() {
                 />
               </div>
 
+              {/* Why we ask for money up front — a real explanation card, not
+                  fine print. COD always needs a Rs 400 Easypaisa advance to
+                  confirm; on a free-delivery pack it comes off the pack
+                  price, on other packs it IS the delivery charge. */}
+              <div className="mt-6 rounded-2xl border-2 border-primary/25 bg-secondary/50 p-5">
+                <p className="flex items-center gap-2 font-semibold">
+                  <ShieldCheck className="h-5 w-5 shrink-0 text-primary" />
+                  {method === "cod" ? "About the Rs 400 advance" : "About paying in full now"}
+                </p>
+                {method === "cod" ? (
+                  bundle.free_delivery ? (
+                    <div className="mt-2 space-y-1.5 text-sm leading-relaxed">
+                      <p>
+                        Delivery is <strong>free</strong> on the {bundle.name} pack — so the{" "}
+                        {formatPKR(totals.advanceDue)} advance{" "}
+                        <strong>comes off your pack price</strong>. It is not an extra charge:
+                        your total stays {formatPKR(totals.total)}.
+                      </p>
+                      <p>
+                        Send {formatPKR(totals.advanceDue)} now via Easypaisa to confirm your
+                        order. Your order is confirmed only after we verify the advance — then
+                        you pay {formatPKR(totals.balanceDue)} in cash when your parcel
+                        arrives.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-2 space-y-1.5 text-sm leading-relaxed">
+                      <p>
+                        The {formatPKR(totals.advanceDue)} <strong>is your delivery charge</strong>{" "}
+                        — not an extra fee. Send it now via Easypaisa to confirm your order.
+                      </p>
+                      <p>
+                        Your order is confirmed only after we verify the advance — then you
+                        pay only the product price, {formatPKR(totals.balanceDue)}, in cash
+                        when your parcel arrives.
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  <div className="mt-2 space-y-1.5 text-sm leading-relaxed">
+                    <p>
+                      You pay the full total now via Easypaisa — {formatPKR(totals.total)}
+                      {bundle.free_delivery
+                        ? " (product price only — delivery is free on this pack)"
+                        : " (product price + Rs 300 delivery)"}{" "}
+                      — and nothing on delivery.
+                    </p>
+                    <p>
+                      We verify your payment and confirm your order, usually within a few
+                      hours.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* Both methods send money via Easypaisa up front — COD sends the
                   Rs 400 confirmation advance, Easypaisa sends the full total —
                   so the payment panel shows for both, with the amount due now. */}
@@ -503,9 +566,20 @@ function CheckoutPage() {
                     </ol>
                     {method === "cod" && (
                       <p className="rounded-xl bg-card p-3 text-sm text-muted-foreground">
-                        This {formatPKR(totals.advanceDue)} is the delivery charge — it confirms
-                        your order. You&apos;ll pay only the product price (
-                        {formatPKR(totals.balanceDue)}) in cash when your parcel arrives.
+                        {bundle.free_delivery ? (
+                          <>
+                            Delivery is free on this pack — the{" "}
+                            {formatPKR(totals.advanceDue)} advance comes off your pack price.
+                            You&apos;ll pay {formatPKR(totals.balanceDue)} in cash when your
+                            parcel arrives.
+                          </>
+                        ) : (
+                          <>
+                            This {formatPKR(totals.advanceDue)} is the delivery charge — it
+                            confirms your order. You&apos;ll pay only the product price (
+                            {formatPKR(totals.balanceDue)}) in cash when your parcel arrives.
+                          </>
+                        )}
                       </p>
                     )}
                     <div className="grid gap-2 rounded-2xl bg-card p-4 sm:grid-cols-2">
@@ -636,7 +710,10 @@ function CheckoutPage() {
                 {method === "cod" ? (
                   <>
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Pay now (Easypaisa advance)</span>
+                      <span className="text-muted-foreground">
+                        Pay now (Easypaisa advance
+                        {bundle.free_delivery ? " · off pack price" : ""})
+                      </span>
                       <span className="text-right font-semibold text-primary">
                         {formatPKR(totals?.advanceDue ?? 0)}
                       </span>
@@ -657,9 +734,20 @@ function CheckoutPage() {
                   </div>
                 )}
                 <p className="pt-2 text-muted-foreground">
-                  {method === "cod"
-                    ? "Send the Rs 400 advance now via Easypaisa to confirm your order. Pay only the product price in cash when your parcel arrives. We'll call to confirm before dispatch."
-                    : "You've sent the full total by Easypaisa — we'll verify your payment and confirm your order shortly."}
+                  {method === "cod" ? (
+                    bundle.free_delivery ? (
+                      <>
+                        Send the Rs 400 advance now via Easypaisa to confirm your order — it
+                        comes off your pack price (delivery is free). Pay the remaining{" "}
+                        {formatPKR(totals?.balanceDue ?? 0)} in cash when your parcel arrives.
+                        We&apos;ll call to confirm before dispatch.
+                      </>
+                    ) : (
+                      "Send the Rs 400 advance now via Easypaisa to confirm your order. Pay only the product price in cash when your parcel arrives. We'll call to confirm before dispatch."
+                    )
+                  ) : (
+                    "You've sent the full total by Easypaisa — we'll verify your payment and confirm your order shortly."
+                  )}
                 </p>
                 <p className="text-muted-foreground">
                   Need help with your order?{" "}

@@ -14,6 +14,11 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
   const lastNote = [...order.events]
     .reverse()
     .find((e) => e.note && e.note !== "Order placed")?.note;
+  // The delivery fee is 0 exactly on a free-delivery pack — the Rs 400 COD
+  // advance then comes off the pack price instead of being the delivery
+  // charge. advance_due / balance_due come from the server (trackOrder),
+  // so this component never derives money itself.
+  const freeDelivery = order.delivery_fee === 0;
 
   return (
     <div className="space-y-6">
@@ -62,7 +67,7 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
         >
           <span className="font-semibold">
             {order.payment_method === "cod"
-              ? `COD advance (${formatPKR(order.delivery_fee)}): `
+              ? `COD advance (${formatPKR(order.advance_due)}): `
               : "Easypaisa: "}
           </span>
           {PAYMENT_STATUS_LABEL[order.payment_status]}
@@ -70,7 +75,9 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
             " — we usually confirm within a few hours."}
           {order.payment_method === "cod" && (
             <span className="mt-1 block">
-              Balance due on delivery: <strong>{formatPKR(order.subtotal)}</strong> (cash).
+              Balance due on delivery: <strong>{formatPKR(order.balance_due)}</strong> (cash).
+              {freeDelivery &&
+                " Delivery was free on this pack — the advance came off your pack price."}
             </span>
           )}
         </div>
@@ -128,9 +135,22 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
                     </p>
                   )}
                   {s === "shipped" && done && order.tracking_number && (
-                    <p className="mt-1 text-xs">
+                    <p className="mt-1 flex items-center gap-1.5 text-xs">
                       Courier tracking:{" "}
                       <span className="font-semibold">{order.tracking_number}</span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const ok = await copyText(order.tracking_number!);
+                          toast.success(
+                            ok ? "✓ Copied" : "Couldn't copy — long-press to copy it manually",
+                          );
+                        }}
+                        aria-label="Copy tracking number"
+                        className="grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-primary"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
                     </p>
                   )}
                 </div>
@@ -151,15 +171,25 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
           <dt className="text-xs text-muted-foreground">Total</dt>
           <dd className="font-medium">{formatPKR(order.total)}</dd>
         </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Delivery</dt>
+          <dd className="font-medium">
+            {freeDelivery ? "Free" : formatPKR(order.delivery_fee)}
+          </dd>
+        </div>
         {order.payment_method === "cod" ? (
           <>
             <div>
-              <dt className="text-xs text-muted-foreground">Advance (Easypaisa)</dt>
-              <dd className="font-medium">{formatPKR(order.delivery_fee)}</dd>
+              <dt className="text-xs text-muted-foreground">
+                {freeDelivery
+                  ? "Advance (deducted from pack price)"
+                  : "Advance paid now (Easypaisa)"}
+              </dt>
+              <dd className="font-medium">{formatPKR(order.advance_due)}</dd>
             </div>
             <div>
               <dt className="text-xs text-muted-foreground">Pay on delivery (cash)</dt>
-              <dd className="font-medium">{formatPKR(order.subtotal)}</dd>
+              <dd className="font-medium">{formatPKR(order.balance_due)}</dd>
             </div>
           </>
         ) : (

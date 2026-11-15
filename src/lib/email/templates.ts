@@ -21,6 +21,12 @@ export type OrderEmailData = {
   delivery_fee: number;
   total: number;
   payment_method: "cod" | "easypaisa";
+  // The Rs 400 COD confirmation advance (the COD delivery fee from
+  // settings). It is NOT the same as delivery_fee: on a free-delivery pack
+  // delivery_fee is 0, but the advance is still Rs 400 — deducted from the
+  // pack price instead of added as a charge. Templates must use this for
+  // the advance and (total − cod_advance) for the COD balance.
+  cod_advance: number;
   payment_status: string;
   status: string;
   easypaisa_txn_id: string | null;
@@ -54,8 +60,8 @@ export function esc(v: string | null | undefined): string {
 }
 
 const LOGO_URL = `${SITE_URL}/images/rose-mark.png`;
-const TRACK_URL = (orderNumber: string) =>
-  `${SITE_URL}/track?order=${encodeURIComponent(orderNumber)}`;
+const TRACK_URL = (orderNumber: string, phone: string) =>
+  `${SITE_URL}/track?order=${encodeURIComponent(orderNumber)}&phone=${encodeURIComponent(phone)}`;
 
 function orderDate(iso: string): string {
   const d = new Date(iso);
@@ -104,31 +110,42 @@ function button(url: string, label: string): string {
 
 function itemsTable(o: OrderEmailData): string {
   const isCod = o.payment_method === "cod";
+  // The delivery fee is 0 exactly when the pack ships free (place_order
+  // charges 0 for free_delivery bundles). The COD advance is still
+  // Rs 400 — it just comes off the pack price instead of being added.
+  const free = o.delivery_fee === 0;
+  const deliveryCell = free
+    ? `<span style="font-weight:700;color:#3d7a5c;">Free</span>`
+    : formatPKR(o.delivery_fee);
+  const advanceLabel = free ? "Advance (deducted from pack price)" : "Advance paid now (Easypaisa)";
+  const codBalance = o.total - o.cod_advance;
   // Full price breakdown — the customer always sees what is due now and
   // what (if anything) is still due on delivery.
   const splitRows = isCod
-    ? `<tr><td style="padding:12px 16px;color:#7d6a72;">Pay now (Easypaisa advance)</td><td style="padding:12px 16px;text-align:right;white-space:nowrap;"><strong>${formatPKR(o.delivery_fee)}</strong></td></tr>
-<tr><td style="padding:12px 16px;color:#7d6a72;">Pay on delivery (cash)</td><td style="padding:12px 16px;text-align:right;white-space:nowrap;"><strong>${formatPKR(o.subtotal)}</strong></td></tr>`
+    ? `<tr><td style="padding:12px 16px;color:#7d6a72;">${advanceLabel}</td><td style="padding:12px 16px;text-align:right;white-space:nowrap;"><strong>${formatPKR(o.cod_advance)}</strong></td></tr>
+<tr><td style="padding:12px 16px;color:#7d6a72;">Pay on delivery (cash)</td><td style="padding:12px 16px;text-align:right;white-space:nowrap;"><strong>${formatPKR(codBalance)}</strong></td></tr>`
     : `<tr><td style="padding:12px 16px;color:#7d6a72;">Paid now (Easypaisa)</td><td style="padding:12px 16px;text-align:right;white-space:nowrap;"><strong>${formatPKR(o.total)}</strong></td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ead9ce;border-radius:12px;overflow:hidden;font-size:15px;">
 <tr><td style="padding:14px 16px;border-bottom:1px solid #ead9ce;"><strong>Herbal Tightening Gel</strong><br><span style="color:#7d6a72;font-size:13px;">${esc(o.bundle_name)} pack · ${o.bundle_pieces} applicator${o.bundle_pieces > 1 ? "s" : ""} × ${o.quantity}</span></td><td style="padding:14px 16px;border-bottom:1px solid #ead9ce;text-align:right;white-space:nowrap;">${formatPKR(o.subtotal)}</td></tr>
-<tr><td style="padding:12px 16px;color:#7d6a72;">Delivery${isCod ? " (COD)" : " (Easypaisa)"}</td><td style="padding:12px 16px;text-align:right;white-space:nowrap;">${formatPKR(o.delivery_fee)}</td></tr>
+<tr><td style="padding:12px 16px;color:#7d6a72;">Delivery${isCod ? " (COD)" : " (Easypaisa)"}</td><td style="padding:12px 16px;text-align:right;white-space:nowrap;">${deliveryCell}</td></tr>
 ${splitRows}
 <tr><td style="padding:14px 16px;border-top:1px solid #ead9ce;font-size:17px;"><strong>Total</strong></td><td style="padding:14px 16px;border-top:1px solid #ead9ce;text-align:right;font-size:17px;white-space:nowrap;"><strong>${formatPKR(o.total)}</strong></td></tr>
 </table>`;
 }
 
 function itemsText(o: OrderEmailData): string {
+  const free = o.delivery_fee === 0;
+  const advanceLabel = free ? "Advance (deducted from pack price)" : "Advance paid now (Easypaisa)";
   const split =
     o.payment_method === "cod"
       ? [
-          `Pay now (Easypaisa advance): ${formatPKR(o.delivery_fee)}`,
-          `Pay on delivery (cash): ${formatPKR(o.subtotal)}`,
+          `${advanceLabel}: ${formatPKR(o.cod_advance)}`,
+          `Pay on delivery (cash): ${formatPKR(o.total - o.cod_advance)}`,
         ]
       : [`Paid now (Easypaisa): ${formatPKR(o.total)}`];
   return [
     `Herbal Tightening Gel — ${o.bundle_name} pack (${o.bundle_pieces} applicators) x ${o.quantity}: ${formatPKR(o.subtotal)}`,
-    `Delivery: ${formatPKR(o.delivery_fee)}`,
+    `Delivery: ${free ? "Free" : formatPKR(o.delivery_fee)}`,
     ...split,
     `Total: ${formatPKR(o.total)}`,
   ].join("\n");
@@ -143,16 +160,26 @@ export function orderConfirmationEmail(
   easypaisa: EasypaisaDetails,
 ): BuiltEmail {
   const subject = `Your RoseCare order ${o.order_number} is confirmed`;
-  const trackUrl = TRACK_URL(o.order_number);
+  const trackUrl = TRACK_URL(o.order_number, o.phone);
   const date = orderDate(o.created_at);
+
+  const free = o.delivery_fee === 0;
+  const codBalance = o.total - o.cod_advance;
 
   const paymentHtml =
     o.payment_method === "cod"
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;"><tr><td style="padding:14px 16px;">
-<p style="margin:0 0 6px;"><strong>Payment:</strong> Cash on Delivery — first send the <strong>${formatPKR(o.delivery_fee)} delivery charge</strong> via Easypaisa to confirm your order:</p>
+      ? free
+        ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;"><tr><td style="padding:14px 16px;">
+<p style="margin:0 0 6px;"><strong>Payment:</strong> Cash on Delivery — first send the <strong>${formatPKR(o.cod_advance)} advance</strong> via Easypaisa to confirm your order. Delivery is <strong>free</strong> on this pack, so the advance comes off your pack price — it is not an extra charge:</p>
 <p style="margin:0;font-size:17px;"><strong>${esc(easypaisa.accountNumber)}</strong> · ${esc(easypaisa.accountName)}</p>
 ${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Transaction ID: ${esc(o.easypaisa_txn_id)}</p>` : ""}
-<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Then pay only <strong>${formatPKR(o.subtotal)}</strong> in cash when your parcel arrives. We&apos;re verifying your advance now — you&apos;ll get another email as soon as it&apos;s confirmed.</p>
+<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Then pay only <strong>${formatPKR(codBalance)}</strong> in cash when your parcel arrives. We&apos;re verifying your advance now — you&apos;ll get another email as soon as it&apos;s confirmed.</p>
+</td></tr></table>`
+        : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;"><tr><td style="padding:14px 16px;">
+<p style="margin:0 0 6px;"><strong>Payment:</strong> Cash on Delivery — first send the <strong>${formatPKR(o.cod_advance)} delivery charge</strong> via Easypaisa to confirm your order:</p>
+<p style="margin:0;font-size:17px;"><strong>${esc(easypaisa.accountNumber)}</strong> · ${esc(easypaisa.accountName)}</p>
+${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Transaction ID: ${esc(o.easypaisa_txn_id)}</p>` : ""}
+<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Then pay only <strong>${formatPKR(codBalance)}</strong> in cash when your parcel arrives. We&apos;re verifying your advance now — you&apos;ll get another email as soon as it&apos;s confirmed.</p>
 </td></tr></table>`
       : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;"><tr><td style="padding:14px 16px;">
 <p style="margin:0 0 6px;"><strong>Payment:</strong> Easypaisa — ${formatPKR(o.total)} to</p>
@@ -164,9 +191,11 @@ ${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">
   const paymentText =
     o.payment_method === "cod"
       ? [
-          `Payment: Cash on Delivery — first send the ${formatPKR(o.delivery_fee)} delivery charge via Easypaisa to ${easypaisa.accountNumber} (${easypaisa.accountName}) to confirm your order.`,
+          free
+            ? `Payment: Cash on Delivery — first send the ${formatPKR(o.cod_advance)} advance via Easypaisa to ${easypaisa.accountNumber} (${easypaisa.accountName}) to confirm your order. Delivery is free on this pack, so the advance comes off your pack price — it is not an extra charge.`
+            : `Payment: Cash on Delivery — first send the ${formatPKR(o.cod_advance)} delivery charge via Easypaisa to ${easypaisa.accountNumber} (${easypaisa.accountName}) to confirm your order.`,
           o.easypaisa_txn_id ? `Transaction ID: ${o.easypaisa_txn_id}` : "",
-          `Then pay only ${formatPKR(o.subtotal)} in cash when your parcel arrives. We're verifying your advance now — you'll get another email as soon as it's confirmed.`,
+          `Then pay only ${formatPKR(codBalance)} in cash when your parcel arrives. We're verifying your advance now — you'll get another email as soon as it's confirmed.`,
         ]
           .filter(Boolean)
           .join("\n")
@@ -181,7 +210,7 @@ ${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">
   const body = `
 <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.3;margin:8px 0 4px;font-weight:600;">Thank you, ${esc(firstName(o.customer_name))}!</h1>
 <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Your order is confirmed. Here is your receipt — keep it safe.</p>
-<p style="text-align:center;margin:18px 0;"><span style="display:inline-block;background-color:#f7efe8;border:1px dashed #c2185b;border-radius:12px;padding:12px 22px;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:1px;user-select:all;-webkit-user-select:all;"><strong>${esc(o.order_number)}</strong></span></p>
+<p style="text-align:center;margin:18px 0;"><span style="display:inline-block;background-color:#f7efe8;border:1px dashed #c2185b;border-radius:12px;padding:12px 22px 10px;text-align:center;"><span style="display:block;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:1px;user-select:all;-webkit-user-select:all;"><strong>${esc(o.order_number)}</strong></span><span style="display:block;margin-top:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:12px;font-weight:600;color:#c2185b;">&#128203; Tap to copy</span></span></p>
 ${date ? `<p style="text-align:center;font-size:13px;color:#7d6a72;margin:0 0 4px;">Placed on ${esc(date)}</p>` : ""}
 ${button(trackUrl, "Track your order")}
 ${itemsTable(o)}
@@ -190,7 +219,7 @@ ${itemsTable(o)}
 <p style="font-size:15px;line-height:1.6;margin:0;">${esc(o.customer_name)}<br>${esc(o.address)}, ${esc(o.city)}<br>${esc(o.phone)}</p>
 <h2 style="font-family:Georgia,'Times New Roman',serif;font-size:18px;margin:22px 0 8px;">What happens next</h2>
 <ol style="font-size:15px;line-height:1.8;margin:0;padding-left:20px;">
-<li>${o.payment_method === "cod" ? `We verify your ${formatPKR(o.delivery_fee)} Easypaisa advance and confirm your order, then pack it discreetly in a plain, unbranded box.` : "We confirm your order and pack it discreetly in a plain, unbranded box."}</li>
+<li>${o.payment_method === "cod" ? `We verify your ${formatPKR(o.cod_advance)} Easypaisa advance and confirm your order, then pack it discreetly in a plain, unbranded box.` : "We confirm your order and pack it discreetly in a plain, unbranded box."}</li>
 <li>Your parcel ships within 2–4 working days, anywhere in Pakistan.</li>
 <li>Track it any time with your order number and mobile number.</li>
 </ol>`;
@@ -213,7 +242,7 @@ ${itemsTable(o)}
     ``,
     `What happens next:`,
     o.payment_method === "cod"
-      ? `1. We verify your ${formatPKR(o.delivery_fee)} Easypaisa advance and confirm your order, then pack it discreetly in a plain, unbranded box.`
+      ? `1. We verify your ${formatPKR(o.cod_advance)} Easypaisa advance and confirm your order, then pack it discreetly in a plain, unbranded box.`
       : `1. We confirm your order and pack it discreetly in a plain, unbranded box.`,
     `2. Your parcel ships within 2–4 working days, anywhere in Pakistan.`,
     `3. Track it any time with your order number and mobile number.`,
@@ -238,7 +267,7 @@ const STATUS_COPY: Record<
     headline: "Your order is confirmed",
     message: (o) =>
       o.payment_method === "cod"
-        ? `Your ${formatPKR(o.delivery_fee)} advance has been verified and your order is confirmed. We're packing it discreetly in a plain box, and it will be on its way soon. You'll pay ${formatPKR(o.subtotal)} in cash when your parcel arrives.`
+        ? `Your ${formatPKR(o.cod_advance)} advance has been verified and your order is confirmed. We're packing it discreetly in a plain box, and it will be on its way soon. You'll pay ${formatPKR(o.total - o.cod_advance)} in cash when your parcel arrives.${o.delivery_fee === 0 ? " Delivery was free on this pack — the advance came off your pack price." : ""}`
         : "Your payment has been verified and your order is confirmed. We're packing it discreetly in a plain box, and it will be on its way soon.",
   },
   processing: {
@@ -264,7 +293,7 @@ const STATUS_COPY: Record<
     headline: "We couldn't verify your payment",
     message: (o) =>
       o.payment_method === "cod"
-        ? `We checked the ${formatPKR(o.delivery_fee)} advance for your order, but we couldn't verify it, so the order was cancelled. Please check your transaction details and try again — or message us on WhatsApp and we'll help you sort it out.`
+        ? `We checked the ${formatPKR(o.cod_advance)} advance for your order, but we couldn't verify it, so the order was cancelled. Please check your transaction details and try again — or message us on WhatsApp and we'll help you sort it out.`
         : "We checked the payment for your order, but we couldn't verify it, so the order was cancelled. Please check your transaction details and try again — or message us on WhatsApp and we'll help you sort it out.",
   },
   cancelled: {
@@ -278,11 +307,11 @@ const STATUS_COPY: Record<
 export function orderStatusEmail(o: OrderEmailData, kind: StatusKind): BuiltEmail {
   const copy = STATUS_COPY[kind];
   const subject = copy.subject(o);
-  const trackUrl = TRACK_URL(o.order_number);
+  const trackUrl = TRACK_URL(o.order_number, o.phone);
 
   const extraHtml =
     kind === "shipped" && o.tracking_number
-      ? `<div style="margin-top:16px;text-align:center;"><p style="font-size:14px;color:#7d6a72;margin:0 0 6px;">Courier tracking number</p><p style="margin:0;"><span style="display:inline-block;background-color:#f7efe8;border:1px dashed #c2185b;border-radius:12px;padding:12px 22px;font-size:20px;letter-spacing:1px;user-select:all;-webkit-user-select:all;"><strong>${esc(o.tracking_number)}</strong></span></p></div>`
+      ? `<div style="margin-top:16px;text-align:center;"><p style="font-size:14px;color:#7d6a72;margin:0 0 6px;">Courier tracking number</p><p style="margin:0;"><span style="display:inline-block;background-color:#f7efe8;border:1px dashed #c2185b;border-radius:12px;padding:12px 22px 10px;text-align:center;"><span style="display:block;font-size:20px;letter-spacing:1px;user-select:all;-webkit-user-select:all;"><strong>${esc(o.tracking_number)}</strong></span><span style="display:block;margin-top:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:12px;font-weight:600;color:#c2185b;">&#128203; Tap to copy</span></span></p></div>`
       : kind === "rejected" && o.admin_note
         ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;margin-top:16px;"><tr><td style="padding:14px 16px;"><strong>Reason:</strong> ${esc(o.admin_note)}</td></tr></table>`
         : "";
@@ -298,7 +327,7 @@ export function orderStatusEmail(o: OrderEmailData, kind: StatusKind): BuiltEmai
 <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.3;margin:8px 0 4px;font-weight:600;">${esc(copy.headline)}</h1>
 <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Hi ${esc(firstName(o.customer_name))},</p>
 <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">${esc(copy.message(o))}</p>
-<p style="font-size:15px;margin:0;">Order <strong>${esc(o.order_number)}</strong> · ${esc(o.bundle_name)} pack × ${o.quantity} · ${formatPKR(o.total)}${o.payment_method === "cod" ? ` · Pay on delivery ${formatPKR(o.subtotal)}` : ""}</p>
+<p style="font-size:15px;margin:0;">Order <strong>${esc(o.order_number)}</strong> · ${esc(o.bundle_name)} pack × ${o.quantity} · ${formatPKR(o.total)}${o.payment_method === "cod" ? ` · Pay on delivery ${formatPKR(o.total - o.cod_advance)}` : ""}</p>
 ${extraHtml}
 ${button(trackUrl, "Track your order")}`;
 
@@ -310,7 +339,7 @@ ${button(trackUrl, "Track your order")}`;
     copy.message(o),
     extraText,
     ``,
-    `Order ${o.order_number} · ${o.bundle_name} pack x ${o.quantity} · ${formatPKR(o.total)}${o.payment_method === "cod" ? ` · Pay on delivery ${formatPKR(o.subtotal)}` : ""}`,
+    `Order ${o.order_number} · ${o.bundle_name} pack x ${o.quantity} · ${formatPKR(o.total)}${o.payment_method === "cod" ? ` · Pay on delivery ${formatPKR(o.total - o.cod_advance)}` : ""}`,
     ``,
     `Track your order: ${trackUrl}`,
     ``,
@@ -335,7 +364,7 @@ export function ownerNewOrderEmail(
 
   const paymentHtml =
     o.payment_method === "cod"
-      ? `<p style="font-size:15px;line-height:1.6;margin:0 0 6px;"><strong>Cash on Delivery</strong> — ${formatPKR(o.delivery_fee)} advance via Easypaisa (verify it below), then collect ${formatPKR(o.subtotal)} in cash when the parcel arrives.</p>
+      ? `<p style="font-size:15px;line-height:1.6;margin:0 0 6px;"><strong>Cash on Delivery</strong> — ${formatPKR(o.cod_advance)} advance via Easypaisa (verify it below)${o.delivery_fee === 0 ? " — delivery is free on this pack, so the advance comes off the pack price" : ""}, then collect ${formatPKR(o.total - o.cod_advance)} in cash when the parcel arrives.</p>
 <p style="font-size:15px;line-height:1.6;margin:0;">Transaction ID: <strong>${esc(o.easypaisa_txn_id ?? "—")}</strong><br>Sent from: ${esc(o.easypaisa_sender_number ?? "—")}</p>
 <p style="font-size:15px;line-height:1.6;margin:10px 0 0;">${o.payment_proof_path ? "Receipt screenshot uploaded — view it in the admin panel." : "No receipt screenshot — verify with the transaction ID."}</p>`
       : `<p style="font-size:15px;line-height:1.6;margin:0 0 6px;"><strong>Easypaisa</strong> — ${formatPKR(o.total)} to ${esc(easypaisa.accountNumber)} (${esc(easypaisa.accountName)}).</p>
@@ -345,7 +374,7 @@ export function ownerNewOrderEmail(
   const paymentText =
     o.payment_method === "cod"
       ? [
-          `Cash on Delivery — ${formatPKR(o.delivery_fee)} advance via Easypaisa (verify it below), then collect ${formatPKR(o.subtotal)} in cash when the parcel arrives.`,
+          `Cash on Delivery — ${formatPKR(o.cod_advance)} advance via Easypaisa (verify it below)${o.delivery_fee === 0 ? " — delivery is free on this pack, so the advance comes off the pack price" : ""}, then collect ${formatPKR(o.total - o.cod_advance)} in cash when the parcel arrives.`,
           `Transaction ID: ${o.easypaisa_txn_id ?? "—"}`,
           `Sent from: ${o.easypaisa_sender_number ?? "—"}`,
           o.payment_proof_path

@@ -18,6 +18,9 @@ type LastOrder = {
   // page shows neutral copy instead of guessing amounts.
   advanceDue?: number;
   balanceDue?: number;
+  // True when the pack ships free — the advance came off the pack price
+  // instead of being the delivery charge.
+  freeDelivery?: boolean;
 };
 
 export const Route = createFileRoute("/order-success")({
@@ -66,14 +69,17 @@ function SuccessPage() {
   const hasDetails = !!stored && stored.orderNumber === orderNumber;
 
   // Every Track link on the page — header, mobile menu, footer — must carry
-  // the order number, not just the main Track button.
+  // the order number, not just the main Track button. The phone rides along
+  // when we know it, so the lookup auto-runs on the track page.
   useEffect(() => {
     if (!orderNumber) return;
-    const href = `/track?order=${encodeURIComponent(orderNumber)}`;
+    const params = new URLSearchParams({ order: orderNumber });
+    if (order?.phone) params.set("phone", order.phone);
+    const href = `/track?${params.toString()}`;
     document
       .querySelectorAll('header a[href="/track"], footer a[href="/track"]')
       .forEach((a) => a.setAttribute("href", href));
-  }, [orderNumber]);
+  }, [orderNumber, order?.phone]);
 
   return (
     <StoreShell>
@@ -100,7 +106,9 @@ function SuccessPage() {
                 {hasDetails
                   ? order.paymentMethod === "easypaisa"
                     ? "We've received your order and Easypaisa details. We'll verify your payment and confirm shortly."
-                    : "Your Rs 400 advance via Easypaisa is being verified. Once confirmed, we'll pack and dispatch your order — please pay the remaining product price in cash when your parcel arrives."
+                    : order.freeDelivery
+                      ? "Your Rs 400 advance via Easypaisa is being verified. It comes off your pack price — delivery is free on this pack — so please pay the remaining balance in cash when your parcel arrives."
+                      : "Your Rs 400 advance via Easypaisa is being verified. Once confirmed, we'll pack and dispatch your order — please pay the remaining product price in cash when your parcel arrives."
                   : "Your order is placed. Your receipt was emailed to you — it has your order number and the amount to pay."}
               </p>
               <div className="mt-8 rounded-3xl border border-border/70 bg-card p-6 text-left shadow-card">
@@ -126,7 +134,9 @@ function SuccessPage() {
                       <>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">
-                            Advance (Easypaisa) — verifying
+                            {order.freeDelivery
+                              ? "Advance (deducted from pack price) — verifying"
+                              : "Advance paid now (Easypaisa) — verifying"}
                           </span>
                           <span className="font-semibold">
                             {order.advanceDue !== undefined
@@ -164,7 +174,13 @@ function SuccessPage() {
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Button variant="hero" size="xl" asChild>
-              <Link to="/track" search={{ order: order?.orderNumber }}>
+              <Link
+                to="/track"
+                search={{
+                  order: order?.orderNumber,
+                  phone: order?.phone ? order.phone : undefined,
+                }}
+              >
                 <PackageSearch />
                 Track order
               </Link>

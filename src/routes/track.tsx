@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
+import { toast } from "sonner";
 import { Loader2, PackageSearch } from "lucide-react";
 import { StoreShell } from "@/components/store/StoreShell";
 import { OrderTimeline } from "@/components/store/OrderTimeline";
@@ -9,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackOrder, type TrackedOrder } from "@/lib/store.functions";
+import { resolveTrackStart } from "@/lib/track-start";
 import { formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
+import { copyText } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/track")({
@@ -17,6 +20,9 @@ export const Route = createFileRoute("/track")({
     order: z.string().max(20).optional(),
     // Email links use ?id= — accept it as an alias for ?order=.
     id: z.string().max(20).optional(),
+    // Email "Track your order" links also carry ?phone= so the lookup can
+    // auto-run with no typing.
+    phone: z.string().max(15).optional(),
   }),
   head: () => ({
     meta: [
@@ -54,15 +60,30 @@ function TrackPage() {
     setError(null);
   };
 
-  const run = async (num: string, ph: string) => {
+  const run = async (num: string, ph: string, autoCopy = false) => {
     setError(null);
     if (num.trim().length < 4) return setError("Enter your order number");
     if (!normalizePkPhone(ph)) return setError("Enter the mobile number used at checkout");
+    // A lookup in flight must never show the previous order — clear it so
+    // the loading state is what the customer sees, not a stale timeline.
+    setOrder(null);
     setLoading(true);
     try {
       const res = await lookup({ data: { orderNumber: num, phone: ph } });
       if (!res.order) setError("We couldn't find an order with those details.");
       setOrder(res.order);
+      if (res.order && autoCopy) {
+        // Email-link flow: the customer tapped Track in their email, so
+        // copy the order number for them — no tap, no long-press. If the
+        // browser blocks it (some need a tap first), fail silently; the
+        // copy button on the order is the fallback.
+        try {
+          const ok = await copyText(num.trim().toUpperCase());
+          if (ok) toast.success("Order number copied to clipboard");
+        } catch {
+          /* blocked — the on-page copy button is the fallback */
+        }
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -71,16 +92,23 @@ function TrackPage() {
   };
 
   useEffect(() => {
+    // What to start with: URL params win (order + phone auto-runs the
+    // lookup, order alone just pre-fills it); the last order in this tab
+    // is only the fallback when the URL carries nothing. While the lookup
+    // runs, run() clears any stale order and shows the loading state.
+    let last: { orderNumber?: string; phone?: string } | null = null;
     try {
-      const last = JSON.parse(sessionStorage.getItem("sukoon-last-order") ?? "null");
-      if (last?.orderNumber && (!searched || last.orderNumber === searched)) {
-        setOrderNumber(last.orderNumber);
-        setPhone(last.phone);
-        run(last.orderNumber, last.phone);
-      }
+      last = JSON.parse(sessionStorage.getItem("sukoon-last-order") ?? "null");
     } catch {
       /* ignore */
     }
+    const start = resolveTrackStart(search, last);
+    setOrderNumber(start.orderNumber);
+    setPhone(start.phone);
+    // Auto-copy only for the email-link flow (URL params): the customer
+    // tapped Track in their email. The stored-order fallback doesn't copy
+    // — the customer just saw the number on the success page.
+    if (start.autoRun) run(start.orderNumber, start.phone, !!(search.order ?? search.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -152,6 +180,12 @@ function TrackPage() {
               )}
             </Button>
           </form>
+          {loading && (
+            <div className="mt-6 grid place-items-center gap-3 rounded-3xl border border-border/70 bg-card p-10 shadow-card">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Looking up your order…</p>
+            </div>
+          )}
           {order && (
             <div className="animate-fade-up mt-6 rounded-3xl border border-border/70 bg-card p-5 shadow-card sm:p-7">
               <OrderTimeline order={order} />

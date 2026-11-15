@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   deriveStatusKind,
+  orderRowToEmailData,
   resetEmailDailyCount,
   sendEmail,
   sendOrderPlacedEmails,
   sendStatusEmailForOrder,
   type OrderEmailData,
+  type OrderRow,
 } from "./resend";
 
 const easypaisa = { accountName: "Abdul Khaliq", accountNumber: "03115778995" };
@@ -26,6 +28,7 @@ const sampleOrder: OrderEmailData = {
   delivery_fee: 400,
   total: 2350,
   payment_method: "cod",
+  cod_advance: 400,
   payment_status: "pending_verification",
   status: "pending",
   easypaisa_txn_id: null,
@@ -61,6 +64,39 @@ afterEach(() => {
   else process.env["RESEND_API_KEY"] = OLD_KEY;
   resetEmailDailyCount();
   vi.restoreAllMocks();
+});
+
+describe("orderRowToEmailData", () => {
+  it("defaults the COD advance to Rs 400 and passes the settings fee through when given", () => {
+    const row = {
+      order_number: "SK-ABC123",
+      customer_name: "Ayesha Khan",
+      email: "ayesha@example.com",
+      phone: "03001234567",
+      city: "Lahore",
+      address: "House 12, Street 4",
+      notes: null,
+      bundle_name: "Trio",
+      bundle_pieces: 3,
+      quantity: 1,
+      total_pieces: 3,
+      subtotal: 4850,
+      delivery_fee: 0,
+      total: 4850,
+      payment_method: "cod",
+      payment_status: "pending_verification",
+      status: "pending",
+      easypaisa_txn_id: null,
+      easypaisa_sender_number: null,
+      payment_proof_path: null,
+      admin_note: null,
+      tracking_number: null,
+      created_at: "2026-11-15T12:00:00.000Z",
+    } as unknown as OrderRow;
+    // Free-delivery order: delivery_fee is 0, but the advance is still 400.
+    expect(orderRowToEmailData(row).cod_advance).toBe(400);
+    expect(orderRowToEmailData(row, 500).cod_advance).toBe(500);
+  });
 });
 
 describe("sendEmail", () => {

@@ -84,11 +84,13 @@ function ProductPage() {
   const [lightbox, setLightbox] = useState(false);
 
   const bundle = data.bundles.find((b) => b.id === selected) ?? data.bundles[0];
+  const freePack = data.bundles.find((b) => b.free_delivery);
   const trustItems = [
     "Discreet plain packaging",
     "Cash on Delivery",
     `Easypaisa to ${data.settings.easypaisa_number} — ${data.settings.easypaisa_account_name}`,
     "Delivery Rs 300 (Easypaisa) · Rs 400 (COD)",
+    ...(freePack ? [`Free delivery on ${freePack.name}`] : []),
     "CE · ISO 9001",
   ];
   const jsonLd = {
@@ -239,6 +241,11 @@ function ProductPage() {
                           </span>
                           <span className="mt-0.5 block text-sm text-muted-foreground">
                             {b.tagline} · {b.pieces} applicator{b.pieces > 1 ? "s" : ""}
+                          </span>
+                          <span className="mt-1 block text-xs text-muted-foreground">
+                            {b.free_delivery
+                              ? "Free delivery · Rs 400 advance comes off your pack price"
+                              : "Rs 400 advance via Easypaisa to confirm · pay the rest on delivery"}
                           </span>
                         </span>
                         <span className="shrink-0 text-right">

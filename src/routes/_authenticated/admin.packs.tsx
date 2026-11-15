@@ -145,6 +145,7 @@ function BundleEditor({ bundle, onSaved }: { bundle: Bundle; onSaved: () => void
     badge: bundle.badge ?? "",
     sort_order: String(bundle.sort_order),
     is_active: bundle.is_active,
+    free_delivery: bundle.free_delivery,
   });
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -170,6 +171,7 @@ function BundleEditor({ bundle, onSaved }: { bundle: Bundle; onSaved: () => void
         badge: f.badge.trim() || null,
         sort_order: parseInt(f.sort_order, 10) || 0,
         is_active: f.is_active,
+        free_delivery: f.free_delivery,
       })
       .eq("id", bundle.id);
     setBusy(false);
@@ -261,6 +263,19 @@ function BundleEditor({ bundle, onSaved }: { bundle: Bundle; onSaved: () => void
             className="rounded-xl"
           />
         </div>
+        <label className="col-span-2 flex items-start justify-between gap-3 rounded-xl border border-border bg-muted/50 px-4 py-3">
+          <span>
+            <span className="block text-sm font-medium">Free delivery</span>
+            <span className="block text-xs text-muted-foreground">
+              No delivery fee on this pack. The Rs 400 COD advance still applies — it comes
+              off the pack price instead of being added.
+            </span>
+          </span>
+          <Switch
+            checked={f.free_delivery}
+            onCheckedChange={(v) => setF((p) => ({ ...p, free_delivery: v }))}
+          />
+        </label>
       </div>
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">

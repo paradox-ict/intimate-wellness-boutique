@@ -123,7 +123,9 @@ export function CartDrawer() {
                     Delivery
                   </dt>
                   <dd className="text-right text-xs leading-5 tabular-nums">
-                    Rs 300 Easypaisa · Rs 400 COD
+                    {bundle.free_delivery
+                      ? "Free · Rs 400 advance off pack price"
+                      : "Rs 300 Easypaisa · Rs 400 COD"}
                   </dd>
                 </div>
                 <div className="flex justify-between pt-2 text-base font-semibold">
