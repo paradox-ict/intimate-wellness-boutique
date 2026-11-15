@@ -40,9 +40,9 @@ export function SiteHeader() {
         scrolled ? "border-b border-border/60 bg-background/80 backdrop-blur-xl" : "bg-transparent",
       )}
     >
-      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4 sm:gap-4 sm:px-5 md:h-20 md:grid-cols-[auto_1fr_auto] md:px-8">
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-4 sm:gap-4 sm:px-5 lg:h-20 lg:grid-cols-[auto_1fr_auto] lg:px-8">
         <Logo />
-        <nav className="hidden justify-center gap-8 md:flex" aria-label="Main">
+        <nav className="hidden justify-center gap-8 lg:flex" aria-label="Main">
           {NAV.map((n) => (
             <a
               key={n.href}
@@ -54,11 +54,13 @@ export function SiteHeader() {
             </a>
           ))}
         </nav>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+          <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-foreground/10 lg:block" />
           <Link
             to="/track"
-            className="hidden rounded-full px-4 py-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground sm:inline-flex"
+            className="hidden h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-[#cf2568] to-[#a3124a] px-5 text-sm font-semibold text-white shadow-[0_8px_20px_-6px_rgba(194,24,91,0.55)] transition-all hover:shadow-[0_10px_24px_-6px_rgba(194,24,91,0.65)] hover:brightness-110 active:scale-[0.98] sm:inline-flex"
           >
+            <PackageSearch className="h-4 w-4 shrink-0" />
             Track order
           </Link>
           {/* Compact Track pill for phones, where the text link is hidden.
@@ -91,7 +93,7 @@ export function SiteHeader() {
           </button>
           <button
             type="button"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full md:hidden sm:h-11 sm:w-11"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full lg:hidden sm:h-11 sm:w-11"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Menu"
             aria-expanded={mobileOpen}
@@ -102,7 +104,7 @@ export function SiteHeader() {
       </div>
       <div
         className={cn(
-          "grid overflow-hidden border-border/60 bg-background/95 backdrop-blur-xl transition-all duration-500 md:hidden",
+          "grid overflow-hidden border-border/60 bg-background/95 backdrop-blur-xl transition-all duration-500 lg:hidden",
           mobileOpen ? "grid-rows-[1fr] border-b" : "grid-rows-[0fr]",
         )}
       >
