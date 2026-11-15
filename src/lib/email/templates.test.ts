@@ -62,7 +62,8 @@ describe("order confirmation email", () => {
     expect(e.html).toContain("https://rosecare.store/track?order=SK-ABC123");
     expect(e.html).toContain("House 12, Street 4, Gulberg III");
     expect(e.html).toContain("03001234567");
-    expect(e.html).toContain("https://rosecare.store/images/rose-mark.png");
+    expect(e.html).toContain("https://rosecare.store/images/rosecare-logo-white.png");
+    expect(e.html).not.toContain("rose-mark");
     expect(e.text).toContain("SK-ABC123");
     expect(e.text).toContain("Rs 2,350");
     expect(e.text).toContain("Advance paid now (Easypaisa): Rs 400");

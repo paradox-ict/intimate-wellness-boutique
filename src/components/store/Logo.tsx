@@ -5,15 +5,17 @@ export function Logo({ className, invert = false }: { className?: string; invert
   return (
     <Link
       to="/"
-      className={cn("group inline-flex min-w-0 items-center gap-1.5 sm:gap-2", className)}
+      className={cn("inline-flex min-w-0 items-center gap-1.5 sm:gap-2", className)}
       aria-label="RoseCare home"
     >
       <img
-        src="/images/rose-mark.png"
+        src={
+          invert ? "/images/rosecare-mark-black.png" : "/images/rosecare-mark-white.png"
+        }
         alt=""
-        width={36}
+        width={57}
         height={36}
-        className="h-7 w-7 shrink-0 rounded-full object-cover shadow-glow transition-transform duration-500 group-hover:rotate-12 sm:h-9 sm:w-9"
+        className="h-7 w-auto shrink-0 sm:h-9"
       />
       <span className="whitespace-nowrap font-display text-xl font-medium leading-none sm:text-2xl">
         <span className="bg-gradient-to-r from-[#e7548a] via-[#c65a9e] to-[#7c5cd6] bg-clip-text text-transparent">

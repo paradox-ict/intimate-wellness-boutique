@@ -59,7 +59,7 @@ export function esc(v: string | null | undefined): string {
     .replace(/'/g, "&#39;");
 }
 
-const LOGO_URL = `${SITE_URL}/images/rose-mark.png`;
+const LOGO_URL = `${SITE_URL}/images/rosecare-logo-white.png`;
 const TRACK_URL = (orderNumber: string, phone: string) =>
   `${SITE_URL}/track?order=${encodeURIComponent(orderNumber)}&phone=${encodeURIComponent(phone)}`;
 
@@ -84,8 +84,7 @@ function layout(opts: { preheader: string; body: string }): string {
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background-color:#fffdf9;border:1px solid #ead9ce;border-radius:18px;overflow:hidden;">
 <tr><td style="padding:28px 28px 8px;text-align:center;">
-<img src="${LOGO_URL}" alt="RoseCare" width="56" height="56" style="border-radius:50%;display:block;margin:0 auto;">
-<p style="margin:12px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.1;"><span style="color:#c2185b;">Rose</span><span style="color:#7d8a99;">Care</span></p>
+<img src="${LOGO_URL}" alt="RoseCare" width="140" style="display:block;margin:0 auto;">
 <p style="margin:6px 0 0;font-size:12px;letter-spacing:3px;color:#9a8a93;">DISCREET INTIMATE CARE</p>
 </td></tr>
 <tr><td style="padding:12px 28px 8px;">${opts.body}</td></tr>

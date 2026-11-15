@@ -77,6 +77,7 @@ function Index() {
         "@type": "Organization",
         name: "RoseCare",
         url: `${SITE_URL}/`,
+        logo: `${SITE_URL}/images/rosecare-logo-white.png`,
       },
       {
         "@type": "WebSite",
