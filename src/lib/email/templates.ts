@@ -165,9 +165,11 @@ export function orderConfirmationEmail(
   const free = o.delivery_fee === 0;
   const codBalance = o.total - o.cod_advance;
 
-  // Real Easypaisa lockup for the payment box (served from the site so it
-  // renders in every mail client that loads remote images).
-  const easypaisaLogo = `<img src="${SITE_URL}/images/easypaisa-logo.png" alt="Easypaisa" width="90" style="display:block;height:auto;margin:0 0 10px;" />`;
+  // Email version of the real Easypaisa lockup (white wordmark on a baked-in
+  // dark-navy pill, transparent outside) — the dark-navy original is nearly
+  // invisible in Gmail dark mode. Served from the site so it renders in
+  // every mail client that loads remote images.
+  const easypaisaLogo = `<img src="${SITE_URL}/images/easypaisa-logo-email.png" alt="Easypaisa" width="90" style="display:block;height:auto;margin:0 0 10px;" />`;
 
   const paymentHtml =
     o.payment_method === "cod"

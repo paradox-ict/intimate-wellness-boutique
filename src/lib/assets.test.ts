@@ -13,12 +13,19 @@ function read(rel: string): string {
 
 describe("Easypaisa brand assets", () => {
   it("both assets exist in public/images and are real PNGs", () => {
-    for (const name of ["easypaisa-mark.png", "easypaisa-logo.png"]) {
+    for (const name of ["easypaisa-mark.png", "easypaisa-logo.png", "easypaisa-logo-email.png"]) {
       const buf = fs.readFileSync(path.join(repoRoot, "public", "images", name));
       expect(buf.length).toBeGreaterThan(1000);
       // PNG magic bytes.
       expect(buf.subarray(0, 4)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
     }
+  });
+
+  it("the email Easypaisa logo is small enough to load fast", () => {
+    const buf = fs.readFileSync(
+      path.join(repoRoot, "public", "images", "easypaisa-logo-email.png"),
+    );
+    expect(buf.length).toBeLessThan(40_000);
   });
 
   it("the 'e' mark is used everywhere Easypaisa appears on the site", () => {
@@ -33,9 +40,11 @@ describe("Easypaisa brand assets", () => {
     }
   });
 
-  it("the full lockup is used in the checkout payment panel and the order email", () => {
+  it("the full lockup is used in the checkout payment panel, the email version in the order email", () => {
     expect(read("src/routes/checkout.tsx")).toContain("/images/easypaisa-logo.png");
-    expect(read("src/lib/email/templates.ts")).toContain("/images/easypaisa-logo.png");
+    expect(read("src/lib/email/templates.ts")).toContain("/images/easypaisa-logo-email.png");
+    // The email must not use the dark-navy original — it is invisible in Gmail dark mode.
+    expect(read("src/lib/email/templates.ts")).not.toContain('"/images/easypaisa-logo.png"');
   });
 
   it("no generic phone icon is used for Easypaisa anywhere", () => {
