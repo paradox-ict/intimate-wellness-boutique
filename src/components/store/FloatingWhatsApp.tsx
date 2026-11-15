@@ -13,8 +13,11 @@ import { WhatsAppIcon } from "./WhatsAppIcon";
 // - Desktop: a permanent 60px button, always there.
 // Hidden on checkout (which has its own fixed Place Order button), admin
 // and auth. Admin/auth pages don't use StoreShell at all, so the path
-// check is belt-and-braces.
-const HIDDEN_PATHS = ["/checkout", "/admin", "/auth"];
+// check is belt-and-braces. Also hidden on order-success: the full-width
+// Track button sits at the bottom of the viewport there and the floating
+// button covered its right end — that page has its own inline WhatsApp
+// link under the buttons instead.
+const HIDDEN_PATHS = ["/checkout", "/order-success", "/admin", "/auth"];
 
 export function FloatingWhatsApp() {
   const { pathname } = useLocation();

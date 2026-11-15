@@ -66,9 +66,18 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
           )}
         >
           <span className="font-semibold">
-            {order.payment_method === "cod"
-              ? `COD advance (${formatPKR(order.advance_due)}): `
-              : "Easypaisa: "}
+            {order.payment_method === "cod" ? (
+              `COD advance (${formatPKR(order.advance_due)}): `
+            ) : (
+              <>
+                <img
+                  src="/images/easypaisa-mark.png"
+                  alt=""
+                  className="mr-1 inline-block h-4 w-4 align-[-2px]"
+                />
+                Easypaisa:{" "}
+              </>
+            )}
           </span>
           {PAYMENT_STATUS_LABEL[order.payment_status]}
           {order.payment_status === "pending_verification" &&
@@ -200,7 +209,10 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
         )}
         <div>
           <dt className="text-xs text-muted-foreground">Payment</dt>
-          <dd className="font-medium">
+          <dd className="flex items-center gap-1.5 font-medium">
+            {order.payment_method === "easypaisa" && (
+              <img src="/images/easypaisa-mark.png" alt="" className="h-4 w-4 shrink-0" />
+            )}
             {order.payment_method === "cod" ? "Cash on Delivery" : "Easypaisa"}
           </dd>
         </div>

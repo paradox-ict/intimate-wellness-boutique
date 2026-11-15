@@ -4,9 +4,11 @@ import { z } from "zod";
 import { Check, Copy, Lock, PackageSearch } from "lucide-react";
 import { toast } from "sonner";
 import { StoreShell } from "@/components/store/StoreShell";
+import { WhatsAppIcon } from "@/components/store/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { formatPKR } from "@/lib/format";
 import { copyText } from "@/lib/utils";
+import { WHATSAPP_URL } from "@/lib/whatsapp";
 
 type LastOrder = {
   orderNumber: string;
@@ -132,35 +134,55 @@ function SuccessPage() {
                   <div className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
                     {order.paymentMethod === "cod" ? (
                       <>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            {order.freeDelivery
-                              ? "Advance (deducted from pack price) — verifying"
-                              : "Advance paid now (Easypaisa) — verifying"}
+                        <div className="flex justify-between gap-3">
+                          <span className="min-w-0 text-muted-foreground">
+                            {order.freeDelivery ? (
+                              "Advance (deducted from pack price) — verifying"
+                            ) : (
+                              <>
+                                Advance paid now (
+                                <img
+                                  src="/images/easypaisa-mark.png"
+                                  alt=""
+                                  className="inline-block h-4 w-4 align-[-2px]"
+                                />{" "}
+                                Easypaisa) — verifying
+                              </>
+                            )}
                           </span>
-                          <span className="font-semibold">
-                            {order.advanceDue !== undefined
-                              ? formatPKR(order.advanceDue)
-                              : "—"}
+                          <span className="shrink-0 whitespace-nowrap font-semibold">
+                            {order.advanceDue !== undefined ? formatPKR(order.advanceDue) : "—"}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Pay on delivery (cash)</span>
-                          <span className="font-semibold">
-                            {order.balanceDue !== undefined
-                              ? formatPKR(order.balanceDue)
-                              : "—"}
+                        <div className="flex justify-between gap-3">
+                          <span className="min-w-0 text-muted-foreground">
+                            Pay on delivery (cash)
+                          </span>
+                          <span className="shrink-0 whitespace-nowrap font-semibold">
+                            {order.balanceDue !== undefined ? formatPKR(order.balanceDue) : "—"}
                           </span>
                         </div>
-                        <div className="flex justify-between border-t border-border pt-2 font-semibold">
-                          <span>Order total</span>
-                          <span>{formatPKR(order.total)}</span>
+                        <div className="flex justify-between gap-3 border-t border-border pt-2 font-semibold">
+                          <span className="min-w-0">Order total</span>
+                          <span className="shrink-0 whitespace-nowrap">
+                            {formatPKR(order.total)}
+                          </span>
                         </div>
                       </>
                     ) : (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Paid via Easypaisa</span>
-                        <span className="font-semibold">{formatPKR(order.total)}</span>
+                      <div className="flex justify-between gap-3">
+                        <span className="min-w-0 text-muted-foreground">
+                          Paid via{" "}
+                          <img
+                            src="/images/easypaisa-mark.png"
+                            alt=""
+                            className="inline-block h-4 w-4 align-[-2px]"
+                          />{" "}
+                          Easypaisa
+                        </span>
+                        <span className="shrink-0 whitespace-nowrap font-semibold">
+                          {formatPKR(order.total)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -189,6 +211,18 @@ function SuccessPage() {
               <Link to="/">Back to home</Link>
             </Button>
           </div>
+          <p className="mt-6 text-sm text-muted-foreground">
+            Questions about your order?{" "}
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+            >
+              <WhatsAppIcon className="h-4 w-4" />
+              Message us on WhatsApp
+            </a>
+          </p>
         </div>
       </section>
     </StoreShell>

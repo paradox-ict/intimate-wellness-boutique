@@ -12,7 +12,6 @@ import {
   Loader2,
   Lock,
   ShieldCheck,
-  Smartphone,
   Truck,
   X,
 } from "lucide-react";
@@ -312,15 +311,19 @@ function CheckoutPage() {
         </div>
         {method === "cod" && (
           <>
-            <div className="flex justify-between text-sm">
-              <dt className="text-muted-foreground">
+            <div className="flex justify-between gap-3 text-sm">
+              <dt className="min-w-0 text-muted-foreground">
                 Pay now (Easypaisa advance{bundle.free_delivery ? " · off pack price" : ""})
               </dt>
-              <dd className="font-semibold tabular-nums">{formatPKR(totals.advanceDue)}</dd>
+              <dd className="shrink-0 whitespace-nowrap font-semibold tabular-nums">
+                {formatPKR(totals.advanceDue)}
+              </dd>
             </div>
-            <div className="flex justify-between text-sm">
-              <dt className="text-muted-foreground">Pay on delivery</dt>
-              <dd className="font-semibold tabular-nums">{formatPKR(totals.balanceDue)}</dd>
+            <div className="flex justify-between gap-3 text-sm">
+              <dt className="min-w-0 text-muted-foreground">Pay on delivery</dt>
+              <dd className="shrink-0 whitespace-nowrap font-semibold tabular-nums">
+                {formatPKR(totals.balanceDue)}
+              </dd>
             </div>
           </>
         )}
@@ -488,7 +491,11 @@ function CheckoutPage() {
                 <PayOption
                   active={method === "easypaisa"}
                   onClick={() => setMethod("easypaisa")}
-                  icon={<Smartphone className="h-5 w-5" />}
+                  icon={<img src="/images/easypaisa-mark.png" alt="" className="h-8 w-8" />}
+                  // The real Easypaisa mark carries its own colours (dark
+                  // navy + green), so it sits on a white chip in both
+                  // states instead of the rose/muted icon chip.
+                  chipClassName="border border-border/60 bg-white"
                   title="Easypaisa"
                   text="Pay in full now, we verify & ship"
                 />
@@ -555,6 +562,7 @@ function CheckoutPage() {
               <div className="mt-6 grid grid-rows-[1fr] opacity-100 transition-all duration-500">
                 <div className="min-h-0 overflow-hidden">
                   <div className="space-y-5 rounded-2xl border border-dashed border-primary/30 bg-secondary/40 p-5">
+                    <img src="/images/easypaisa-logo.png" alt="Easypaisa" className="h-6 w-auto" />
                     <ol className="space-y-2 text-sm">
                       <li>
                         <span className="font-semibold">1.</span> Open Easypaisa and send{" "}
@@ -710,25 +718,25 @@ function CheckoutPage() {
                 {method === "cod" ? (
                   <>
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">
+                      <span className="min-w-0 text-muted-foreground">
                         Pay now (Easypaisa advance
                         {bundle.free_delivery ? " · off pack price" : ""})
                       </span>
-                      <span className="text-right font-semibold text-primary">
+                      <span className="shrink-0 whitespace-nowrap text-right font-semibold text-primary">
                         {formatPKR(totals?.advanceDue ?? 0)}
                       </span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Pay on delivery (cash)</span>
-                      <span className="text-right font-semibold">
+                      <span className="min-w-0 text-muted-foreground">Pay on delivery (cash)</span>
+                      <span className="shrink-0 whitespace-nowrap text-right font-semibold">
                         {formatPKR(totals?.balanceDue ?? 0)}
                       </span>
                     </div>
                   </>
                 ) : (
                   <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground">Total to pay now</span>
-                    <span className="text-right font-semibold text-primary">
+                    <span className="min-w-0 text-muted-foreground">Total to pay now</span>
+                    <span className="shrink-0 whitespace-nowrap text-right font-semibold text-primary">
                       {formatPKR(totals?.total ?? 0)}
                     </span>
                   </div>
@@ -859,12 +867,17 @@ function PayOption({
   active,
   onClick,
   icon,
+  chipClassName,
   title,
   text,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
+  // Optional override for the icon chip — brand marks with their own
+  // colours (e.g. the Easypaisa mark) need a white chip, not the
+  // rose/muted one.
+  chipClassName?: string;
   title: string;
   text: string;
 }) {
@@ -884,7 +897,8 @@ function PayOption({
       <span
         className={cn(
           "grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-colors",
-          active ? "bg-brand text-primary-foreground" : "bg-muted text-foreground",
+          chipClassName ??
+            (active ? "bg-brand text-primary-foreground" : "bg-muted text-foreground"),
         )}
       >
         {icon}

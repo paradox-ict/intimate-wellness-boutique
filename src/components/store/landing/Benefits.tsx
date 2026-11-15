@@ -1,4 +1,4 @@
-import { Droplets, Flower2, ShieldPlus, Sparkles, Wind, HeartHandshake, Waves } from "lucide-react";
+import { Droplets, Feather, Flower2, ShieldPlus, Sparkles, Wind, Waves } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "./SectionHeading";
 
@@ -24,7 +24,7 @@ export const BENEFITS = [
     text: "Supports a firmer, toned feeling with regular use.",
   },
   {
-    icon: HeartHandshake,
+    icon: Feather,
     title: "Anti-itching",
     text: "Soothes irritation and everyday discomfort.",
   },

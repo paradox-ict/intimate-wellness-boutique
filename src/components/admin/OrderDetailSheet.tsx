@@ -260,10 +260,9 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
               Rs 400 advance, Easypaisa sends the full total — so both get a
               payment section with the amount to verify. */}
           <section className="rounded-2xl border-2 border-primary/20 bg-card p-5">
-            <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              {order.payment_method === "cod"
-                ? "COD advance (Easypaisa)"
-                : "Easypaisa payment"}
+            <h3 className="flex items-center gap-2 font-sans text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <img src="/images/easypaisa-mark.png" alt="" className="h-5 w-5 shrink-0" />
+              {order.payment_method === "cod" ? "COD advance (Easypaisa)" : "Easypaisa payment"}
             </h3>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
               <div>

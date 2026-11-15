@@ -1,4 +1,4 @@
-import { EyeOff, Lock, Package, PhoneOff } from "lucide-react";
+import { EyeOff, Lock, Package, PhoneCall } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { SectionHeading } from "./SectionHeading";
 
@@ -14,7 +14,7 @@ const POINTS = [
     text: "The label shows a general wellness store name — nothing that reveals what's inside.",
   },
   {
-    icon: PhoneOff,
+    icon: PhoneCall,
     title: "Respectful courier calls",
     text: "Riders only confirm your address. They never mention the product.",
   },

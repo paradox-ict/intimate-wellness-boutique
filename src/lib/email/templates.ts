@@ -166,22 +166,29 @@ export function orderConfirmationEmail(
   const free = o.delivery_fee === 0;
   const codBalance = o.total - o.cod_advance;
 
+  // Real Easypaisa lockup for the payment box (served from the site so it
+  // renders in every mail client that loads remote images).
+  const easypaisaLogo = `<img src="${SITE_URL}/images/easypaisa-logo.png" alt="Easypaisa" width="90" style="display:block;height:auto;margin:0 0 10px;" />`;
+
   const paymentHtml =
     o.payment_method === "cod"
       ? free
         ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;"><tr><td style="padding:14px 16px;">
+${easypaisaLogo}
 <p style="margin:0 0 6px;"><strong>Payment:</strong> Cash on Delivery — first send the <strong>${formatPKR(o.cod_advance)} advance</strong> via Easypaisa to confirm your order. Delivery is <strong>free</strong> on this pack, so the advance comes off your pack price — it is not an extra charge:</p>
 <p style="margin:0;font-size:17px;"><strong>${esc(easypaisa.accountNumber)}</strong> · ${esc(easypaisa.accountName)}</p>
 ${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Transaction ID: ${esc(o.easypaisa_txn_id)}</p>` : ""}
 <p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Then pay only <strong>${formatPKR(codBalance)}</strong> in cash when your parcel arrives. We&apos;re verifying your advance now — you&apos;ll get another email as soon as it&apos;s confirmed.</p>
 </td></tr></table>`
         : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;"><tr><td style="padding:14px 16px;">
+${easypaisaLogo}
 <p style="margin:0 0 6px;"><strong>Payment:</strong> Cash on Delivery — first send the <strong>${formatPKR(o.cod_advance)} delivery charge</strong> via Easypaisa to confirm your order:</p>
 <p style="margin:0;font-size:17px;"><strong>${esc(easypaisa.accountNumber)}</strong> · ${esc(easypaisa.accountName)}</p>
 ${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Transaction ID: ${esc(o.easypaisa_txn_id)}</p>` : ""}
 <p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Then pay only <strong>${formatPKR(codBalance)}</strong> in cash when your parcel arrives. We&apos;re verifying your advance now — you&apos;ll get another email as soon as it&apos;s confirmed.</p>
 </td></tr></table>`
       : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fdf2f5;border:1px solid #f3c6d4;border-radius:12px;font-size:15px;"><tr><td style="padding:14px 16px;">
+${easypaisaLogo}
 <p style="margin:0 0 6px;"><strong>Payment:</strong> Easypaisa — ${formatPKR(o.total)} to</p>
 <p style="margin:0;font-size:17px;"><strong>${esc(easypaisa.accountNumber)}</strong> · ${esc(easypaisa.accountName)}</p>
 ${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">Transaction ID: ${esc(o.easypaisa_txn_id)}</p>` : ""}
