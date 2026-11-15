@@ -13,7 +13,11 @@ import { formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/track")({
-  validateSearch: z.object({ order: z.string().max(20).optional() }),
+  validateSearch: z.object({
+    order: z.string().max(20).optional(),
+    // Email links use ?id= — accept it as an alias for ?order=.
+    id: z.string().max(20).optional(),
+  }),
   head: () => ({
     meta: [
       { title: "Track Your Order — RoseCare" },
@@ -35,8 +39,9 @@ export const Route = createFileRoute("/track")({
 
 function TrackPage() {
   const search = Route.useSearch();
+  const searched = search.order ?? search.id;
   const lookup = useServerFn(trackOrder);
-  const [orderNumber, setOrderNumber] = useState(search.order ?? "");
+  const [orderNumber, setOrderNumber] = useState(searched ?? "");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +73,7 @@ function TrackPage() {
   useEffect(() => {
     try {
       const last = JSON.parse(sessionStorage.getItem("sukoon-last-order") ?? "null");
-      if (last?.orderNumber && (!search.order || last.orderNumber === search.order)) {
+      if (last?.orderNumber && (!searched || last.orderNumber === searched)) {
         setOrderNumber(last.orderNumber);
         setPhone(last.phone);
         run(last.orderNumber, last.phone);

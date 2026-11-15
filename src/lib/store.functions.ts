@@ -4,26 +4,13 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 import { normalizePkPhone } from "./format";
+import { hitRateLimit } from "./rate-limit";
 
-// Best-effort per-IP throttle for the public mutations. Serverless instances
-// are ephemeral, so this is defense-in-depth, not a hard guarantee — a Vercel
-// WAF rate-limit rule is the durable layer. Limits are generous so real
-// customers never hit them; if the IP can't be determined, don't throttle.
-const buckets = new Map<string, { count: number; resetAt: number }>();
-function hitThrottle(key: string, limit: number, windowMs: number): boolean {
-  if (!key) return false;
-  const now = Date.now();
-  const b = buckets.get(key);
-  if (!b || now >= b.resetAt) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return false;
-  }
-  b.count += 1;
-  if (buckets.size > 5000) {
-    for (const [k, v] of buckets) if (now >= v.resetAt) buckets.delete(k);
-  }
-  return b.count > limit;
-}
+// Rate limits live in ./rate-limit (in-memory fixed windows). Serverless
+// instances are ephemeral, so they are defense-in-depth, not a hard
+// guarantee — a Vercel WAF rate-limit rule is the durable layer. Limits are
+// generous so real customers never hit them; if the IP can't be determined,
+// don't throttle.
 function clientIp(): string {
   try {
     const fwd = getRequest().headers.get("x-forwarded-for") ?? "";
@@ -155,13 +142,13 @@ const phoneSchema = z
     return n;
   });
 
-const placeOrderSchema = z
+export const placeOrderSchema = z
   .object({
     bundleId: z.string().uuid(),
     quantity: z.number().int().min(1).max(10),
     customerName: z.string().trim().min(2).max(80),
     phone: phoneSchema,
-    email: z.string().trim().email().max(255).optional().or(z.literal("")),
+    email: z.string().trim().email({ message: "Enter a valid email address" }).max(255),
     city: z.string().trim().min(2).max(60),
     address: z.string().trim().min(8).max(400),
     notes: z.string().trim().max(400).optional().or(z.literal("")),
@@ -203,7 +190,20 @@ const ERROR_MESSAGES: Record<string, string> = {
 export const placeOrder = createServerFn({ method: "POST" })
   .validator((data: PlaceOrderInput) => placeOrderSchema.parse(data))
   .handler(async ({ data }) => {
-    if (hitThrottle(`order:${clientIp()}`, 10, 10 * 60 * 1000)) {
+    if (hitRateLimit(`order:${clientIp()}`, 10, 10 * 60 * 1000)) {
+      return {
+        ok: false as const,
+        error: "Too many orders from this device. Please try again in a few minutes.",
+      };
+    }
+    // Anti-spam: one phone or email may place at most 3 orders/hour. Without
+    // this, anyone could use the store to flood a victim's inbox with order
+    // confirmations. Same generic message as the IP limit — never reveal
+    // which limit fired. data.phone is already normalised by the schema.
+    if (
+      hitRateLimit(`order-phone:${data.phone}`, 3, 60 * 60 * 1000) ||
+      hitRateLimit(`order-email:${data.email.toLowerCase()}`, 3, 60 * 60 * 1000)
+    ) {
       return {
         ok: false as const,
         error: "Too many orders from this device. Please try again in a few minutes.",
@@ -260,6 +260,69 @@ export const placeOrder = createServerFn({ method: "POST" })
       };
     }
 
+    // Order placed — email the customer their receipt + tracking link and
+    // alert the owner. FAIL-SOFT: email problems are logged and never fail
+    // the order; the customer still gets their order number below.
+    try {
+      const { data: full } = await supabaseAdmin
+        .from("orders")
+        .select("*")
+        .eq("order_number", rows[0].order_number)
+        .maybeSingle();
+      const { data: settings } = await supabaseAdmin
+        .from("store_settings")
+        .select("easypaisa_account_name, easypaisa_number")
+        .eq("id", 1)
+        .maybeSingle();
+      if (full) {
+        // Idempotency: claim each email exactly once BEFORE sending. The
+        // UPDATE only touches the row while its sent-flag is still NULL, so
+        // a retried placeOrder (or two serverless instances racing) can
+        // never send a duplicate confirmation or owner alert. At-most-once
+        // by design: if the send then fails, the flag stays set and the
+        // failure is visible in the logs — a duplicate receipt is worse
+        // than a missed one. If the flag columns don't exist yet (SQL not
+        // run), the claim errors and we send anyway — fail-open, so a
+        // missing column can never swallow a customer's receipt.
+        type OrdersUpdate = Database["public"]["Tables"]["orders"]["Update"];
+        const claim = async (
+          column: "confirmation_email_sent_at" | "owner_alert_sent_at",
+        ): Promise<boolean> => {
+          const stamp = { [column]: new Date().toISOString() } as unknown as OrdersUpdate;
+          const { data: claimed, error: claimErr } = await supabaseAdmin
+            .from("orders")
+            .update(stamp)
+            .eq("id", full.id)
+            .is(column, null)
+            .select("id")
+            .maybeSingle();
+          if (claimErr) {
+            console.error("[email] claim failed (sending anyway)", column, claimErr.message);
+            return true;
+          }
+          return !!claimed;
+        };
+        const sendConfirmation = full.email ? await claim("confirmation_email_sent_at") : false;
+        const sendOwnerAlert = process.env["ADMIN_EMAIL"]
+          ? await claim("owner_alert_sent_at")
+          : false;
+        const { orderRowToEmailData, sendOrderPlacedEmails } = await import(
+          "@/lib/email/resend"
+        );
+        await sendOrderPlacedEmails({
+          order: orderRowToEmailData(full),
+          easypaisa: {
+            accountName: settings?.easypaisa_account_name ?? "",
+            accountNumber: settings?.easypaisa_number ?? "",
+          },
+          ownerEmail: sendOwnerAlert ? process.env["ADMIN_EMAIL"] : undefined,
+          sendConfirmation,
+        });
+      }
+    } catch (err) {
+      console.error("[email] order-placed emails failed", err);
+    }
+
     return {
       ok: true as const,
       orderNumber: rows[0].order_number,
@@ -299,7 +362,7 @@ export const trackOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ order: TrackedOrder | null }> => {
     // Throttled lookups answer exactly like a miss, so a brute-force prober
     // can't tell throttling apart from a wrong order number / phone.
-    if (hitThrottle(`track:${clientIp()}`, 30, 10 * 60 * 1000)) return { order: null };
+    if (hitRateLimit(`track:${clientIp()}`, 30, 10 * 60 * 1000)) return { order: null };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order } = await supabaseAdmin
       .from("orders")
@@ -317,4 +380,125 @@ export const trackOrder = createServerFn({ method: "POST" })
       .order("created_at");
     const { id: _id, ...rest } = order;
     return { order: { ...rest, events: events ?? [] } };
+  });
+
+// ---------------------------------------------------------------------------
+// Order-status emails (admin-triggered)
+// ---------------------------------------------------------------------------
+
+const notifyOrderStatusSchema = z.object({
+  orderId: z.string().uuid(),
+  accessToken: z.string().min(10).max(5000),
+  prevStatus: z.string().max(30),
+  prevPaymentStatus: z.string().max(30),
+});
+
+/**
+ * Send the customer their status email after an admin status change. Called
+ * by the admin UI right after a successful order update, with the order's
+ * previous state so only real changes send mail.
+ *
+ * Authenticated: the caller must be a signed-in admin (access token verified
+ * with the service-role client + has_role check). Without that, anyone who
+ * knew an order id could spam customers with status emails. Returns
+ * ok:false (without saying why) for bad auth, throttling, missing orders
+ * and missing customer emails — the admin action itself already succeeded,
+ * so nothing here may ever fail it.
+ *
+ * Anti-spam, three layers: (1) deriveStatusKind sends ONLY on a real
+ * status/payment_status change; (2) the (status, payment, kind) triple is
+ * atomically claimed on the order row before sending, so a repeated notify
+ * for the same transition sends nothing — one email per transition; (3) one
+ * customer inbox gets at most 5 status emails/hour even from a stuck or
+ * compromised admin session.
+ */
+export const notifyOrderStatus = createServerFn({ method: "POST" })
+  .validator((data: z.infer<typeof notifyOrderStatusSchema>) =>
+    notifyOrderStatusSchema.parse(data),
+  )
+  .handler(async ({ data }) => {
+    if (hitRateLimit(`notify:${clientIp()}`, 20, 10 * 60 * 1000)) return { ok: false as const };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const {
+      data: { user },
+      error: authErr,
+    } = await supabaseAdmin.auth.getUser(data.accessToken);
+    if (authErr || !user) return { ok: false as const };
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", {
+      _user_id: user.id,
+      _role: "admin",
+    });
+    if (!isAdmin) return { ok: false as const };
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (!order || !order.email) return { ok: false as const };
+    const { deriveStatusKind, orderRowToEmailData, sendStatusEmailForOrder } = await import(
+      "@/lib/email/resend"
+    );
+    const emailData = orderRowToEmailData(order);
+    const kind = deriveStatusKind(emailData, data.prevStatus, data.prevPaymentStatus);
+    if (!kind) return { ok: true as const, sent: false as const, kind: null };
+    if (hitRateLimit(`notify-email:${emailData.email.toLowerCase()}`, 5, 60 * 60 * 1000)) {
+      console.warn("[email] status email throttled for", order.order_number);
+      return { ok: true as const, sent: false as const, kind };
+    }
+    // Atomically claim this exact (status, payment, kind) triple on the
+    // order row. The UPDATE matches only while at least one stored value is
+    // NULL or different, so a repeated notify for the same transition
+    // matches zero rows and sends nothing. Columns come from
+    // rosecare-email-setup.sql (cast: the generated types don't know them
+    // until they're regenerated); if the claim errors we send anyway —
+    // fail-open, so a missing column can never swallow a status email.
+    type OrdersUpdate = Database["public"]["Tables"]["orders"]["Update"];
+    const stamp = {
+      last_status_email_status: order.status,
+      last_status_email_payment: order.payment_status,
+      last_status_email_kind: kind,
+      last_status_email_at: new Date().toISOString(),
+    } as unknown as OrdersUpdate;
+    const { data: claimed, error: claimErr } = await supabaseAdmin
+      .from("orders")
+      .update(stamp)
+      .eq("id", order.id)
+      .or(
+        `last_status_email_status.is.null,last_status_email_status.neq.${order.status},` +
+          `last_status_email_payment.is.null,last_status_email_payment.neq.${order.payment_status},` +
+          `last_status_email_kind.is.null,last_status_email_kind.neq.${kind}`,
+      )
+      .select("id")
+      .maybeSingle();
+    if (claimErr) {
+      console.error("[email] status claim failed (sending anyway)", claimErr.message);
+    } else if (!claimed) {
+      return { ok: true as const, sent: false as const, kind, duplicate: true };
+    }
+    try {
+      const { sent } = await sendStatusEmailForOrder({
+        order: emailData,
+        prevStatus: data.prevStatus,
+        prevPaymentStatus: data.prevPaymentStatus,
+      });
+      if (!sent) {
+        // Send failed — roll the claim back so a later retry can send.
+        await supabaseAdmin
+          .from("orders")
+          .update({
+            last_status_email_status: null,
+            last_status_email_payment: null,
+            last_status_email_kind: null,
+            last_status_email_at: null,
+          } as unknown as OrdersUpdate)
+          .eq("id", order.id)
+          .eq("last_status_email_status", order.status)
+          .eq("last_status_email_payment", order.payment_status)
+          .eq("last_status_email_kind", kind);
+      }
+      return { ok: true as const, sent, kind };
+    } catch (err) {
+      console.error("[email] status email failed", err);
+      return { ok: true as const, sent: false as const };
+    }
   });

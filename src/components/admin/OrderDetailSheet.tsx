@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { CheckCircle2, Copy, ExternalLink, Loader2, MapPin, Phone, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { notifyOrderStatus } from "@/lib/store.functions";
 import { orderEventsQuery, type Order } from "@/lib/admin-queries";
 import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, formatPKR } from "@/lib/format";
 import {
@@ -38,6 +40,7 @@ type Status = (typeof STATUSES)[number];
 
 export function OrderDetailSheet({ order, onClose }: { order: Order | null; onClose: () => void }) {
   const qc = useQueryClient();
+  const notify = useServerFn(notifyOrderStatus);
   const [proofUrl, setProofUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>("pending");
   const [tracking, setTracking] = useState("");
@@ -67,6 +70,12 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
     msg: string,
   ) => {
     setSaving(kind);
+    // The order's state BEFORE this save, so the server can tell what
+    // actually changed and send only the email that change deserves.
+    const prev = {
+      status: order.status,
+      payment_status: order.payment_status,
+    };
     const { error } = await supabase.from("orders").update(patch).eq("id", order.id);
     setSaving(null);
     if (error) {
@@ -74,6 +83,27 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
       return;
     }
     toast.success(msg);
+    // Email the customer about the change. Fire-and-forget: the update
+    // already succeeded, so a mail failure must never surface here. The
+    // server verifies the admin's session before sending anything.
+    void (async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+        await notify({
+          data: {
+            orderId: order.id,
+            accessToken: session.access_token,
+            prevStatus: prev.status,
+            prevPaymentStatus: prev.payment_status,
+          },
+        });
+      } catch (err) {
+        console.error("[email] status notify failed", err);
+      }
+    })();
     await Promise.all([
       qc.invalidateQueries({ queryKey: ["admin", "orders"] }),
       qc.invalidateQueries({ queryKey: ["admin", "order-events", order.id] }),

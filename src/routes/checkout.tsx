@@ -154,8 +154,8 @@ function CheckoutPage() {
     const e: Errors = {};
     if (form.customerName.trim().length < 2) e.customerName = "Please enter your name";
     if (!normalizePkPhone(form.phone)) e.phone = "Enter a valid mobile number (03XX XXXXXXX)";
-    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email))
-      e.email = "Enter a valid email or leave it empty";
+    if (!/^\S+@\S+\.\S+$/.test(form.email))
+      e.email = "Enter a valid email address — we'll send your receipt and tracking updates there";
     if (form.city.trim().length < 2) e.city = "Please enter your city";
     if (form.address.trim().length < 8) e.address = "Please enter your full address";
     if (method === "easypaisa" && !txnId.trim() && !proof)
@@ -388,10 +388,15 @@ function CheckoutPage() {
                     className="h-12 rounded-xl"
                   />
                 </Field>
-                <Field label="Email (optional)" error={errors.email}>
+                <Field
+                  label="Email"
+                  error={errors.email}
+                  hint="Your receipt and tracking updates go here"
+                >
                   <Input
                     type="email"
                     autoComplete="email"
+                    required
                     value={form.email}
                     onChange={set("email")}
                     aria-invalid={!!errors.email}
