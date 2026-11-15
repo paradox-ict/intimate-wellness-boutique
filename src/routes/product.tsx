@@ -146,7 +146,7 @@ function ProductPage() {
                   className="aspect-square w-full object-cover"
                 />
               </button>
-              <span className="pointer-events-none absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-card/85 text-foreground shadow-card backdrop-blur">
+              <span className="pointer-events-none absolute bottom-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-card/85 text-foreground shadow-card backdrop-blur">
                 <Expand className="h-4 w-4" />
               </span>
             </div>

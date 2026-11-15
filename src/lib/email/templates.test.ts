@@ -177,12 +177,20 @@ describe("order confirmation email", () => {
     expect(e.text).toContain("Paid now (Easypaisa): Rs 2,250");
   });
 
-  it("order-number block looks like a copy button with a tap-to-copy hint", () => {
+  it("order-number block is a link to the track deep-link (tap opens the order, which copies the number)", () => {
     const e = orderConfirmationEmail(sampleOrder, easypaisa);
-    expect(e.html).toContain("Tap to copy");
-    // The hint sits OUTSIDE the selectable value, so a tap copies only
-    // the order number — never the hint text with it.
-    expect(e.html).toContain("user-select:all");
+    // Gmail strips user-select, so tap-to-select does nothing there. The
+    // number is a link instead: one tap opens the order on the track page,
+    // which auto-searches and copies the number on the first tap.
+    expect(e.html).toContain(
+      `<a href="https://rosecare.store/track?order=SK-ABC123&phone=03001234567"`,
+    );
+    expect(e.html).toMatch(
+      /<a href="https:\/\/rosecare\.store\/track\?order=SK-ABC123&phone=03001234567"[^>]*>[\s\S]*?SK-ABC123[\s\S]*?<\/a>/,
+    );
+    expect(e.html).toContain("Tap to open your order — the number copies automatically");
+    expect(e.html).not.toContain("Tap to copy");
+    expect(e.html).not.toContain("user-select:all");
     expect(e.html).toContain("border:1px dashed #c2185b");
   });
 
@@ -276,9 +284,17 @@ describe("order status emails", () => {
       "shipped",
     );
     expect(withTracking.html).toContain("TCS123456");
-    // The tracking block looks like a copy button: tap selects the number.
-    expect(withTracking.html).toContain("Tap to copy");
-    expect(withTracking.html).toContain("user-select:all");
+    // The tracking block is a link to the track deep-link (same URL as
+    // the Track button): one tap opens the order, where the courier
+    // number has its own copy button.
+    expect(withTracking.html).toContain(
+      `<a href="https://rosecare.store/track?order=SK-ABC123&phone=03001234567"`,
+    );
+    expect(withTracking.html).toMatch(
+      /<a href="https:\/\/rosecare\.store\/track\?order=SK-ABC123&phone=03001234567"[^>]*>[\s\S]*?TCS123456[\s\S]*?<\/a>/,
+    );
+    expect(withTracking.html).toContain("Tap to open your order — copy the number there");
+    expect(withTracking.html).not.toContain("Tap to copy");
     const withoutTracking = orderStatusEmail(sampleOrder, "shipped");
     expect(withoutTracking.html).not.toContain("Courier tracking number");
   });
