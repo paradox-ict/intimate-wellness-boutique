@@ -18,12 +18,12 @@ export const Route = createFileRoute("/order-success")({
   validateSearch: z.object({ order: z.string().max(20).optional() }),
   head: () => ({
     meta: [
-      { title: "Thank You — Your Order Is Placed | Sukoon" },
+      { title: "Thank You — Your Order Is Placed | RoseCare" },
       {
         name: "description",
-        content: "Your Sukoon order has been received and will be delivered in plain packaging.",
+        content: "Your RoseCare order has been received and will be delivered in plain packaging.",
       },
-      { property: "og:title", content: "Order placed — Sukoon" },
+      { property: "og:title", content: "Order placed — RoseCare" },
       { property: "og:description", content: "Your discreet order has been received." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

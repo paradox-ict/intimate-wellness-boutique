@@ -18,13 +18,13 @@ import { SITE_URL } from "@/lib/site";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sukoon Herbal Tightening Gel — Discreet Intimate Care in Pakistan" },
+      { title: "RoseCare Herbal Tightening Gel — Discreet Intimate Care in Pakistan" },
       {
         name: "description",
         content:
           "Herbal vaginal tightening gel: antibacterial, cleansing, moisturising, anti-itching. CE & ISO 9001. Plain packaging, COD & Easypaisa across Pakistan.",
       },
-      { property: "og:title", content: "Sukoon Herbal Tightening Gel — Discreet Intimate Care" },
+      { property: "og:title", content: "RoseCare Herbal Tightening Gel — Discreet Intimate Care" },
       {
         property: "og:description",
         content:
@@ -35,9 +35,9 @@ export const Route = createFileRoute("/")({
       { property: "og:image", content: `${SITE_URL}/images/og-image.jpg` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "828" },
-      { property: "og:image:alt", content: "Sukoon herbal tightening gel applicator on silk with herbs and a flower" },
+      { property: "og:image:alt", content: "RoseCare herbal tightening gel applicator on silk with herbs and a flower" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Sukoon Herbal Tightening Gel — Discreet Intimate Care" },
+      { name: "twitter:title", content: "RoseCare Herbal Tightening Gel — Discreet Intimate Care" },
       {
         name: "twitter:description",
         content:
@@ -58,12 +58,12 @@ function Index() {
     "@graph": [
       {
         "@type": "Product",
-        name: "Sukoon Herbal Tightening Gel",
+        name: "RoseCare Herbal Tightening Gel",
         description:
           "Herbal vaginal tightening gel in single-use applicators. Antibacterial, cleansing, moisturising, tightening, anti-itching, odour removal and lubricating. CE & ISO 9001.",
         url: `${SITE_URL}/`,
         image: `${SITE_URL}/images/og-image.jpg`,
-        brand: { "@type": "Brand", name: "Sukoon" },
+        brand: { "@type": "Brand", name: "RoseCare" },
         offers: {
           "@type": "AggregateOffer",
           priceCurrency: "PKR",
@@ -75,12 +75,12 @@ function Index() {
       },
       {
         "@type": "Organization",
-        name: "Sukoon",
+        name: "RoseCare",
         url: `${SITE_URL}/`,
       },
       {
         "@type": "WebSite",
-        name: "Sukoon",
+        name: "RoseCare",
         url: `${SITE_URL}/`,
       },
       {

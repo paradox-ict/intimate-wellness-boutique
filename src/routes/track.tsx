@@ -16,12 +16,12 @@ export const Route = createFileRoute("/track")({
   validateSearch: z.object({ order: z.string().max(20).optional() }),
   head: () => ({
     meta: [
-      { title: "Track Your Order — Sukoon" },
+      { title: "Track Your Order — RoseCare" },
       {
         name: "description",
-        content: "Check the status of your Sukoon order with your order number and mobile number.",
+        content: "Check the status of your RoseCare order with your order number and mobile number.",
       },
-      { property: "og:title", content: "Track Your Order — Sukoon" },
+      { property: "og:title", content: "Track Your Order — RoseCare" },
       { property: "og:description", content: "Check your discreet order's delivery status." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: `${SITE_URL}/track` },

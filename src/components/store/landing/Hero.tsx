@@ -96,7 +96,7 @@ export function Hero() {
               playsInline
               preload="auto"
               poster="/videos/hero-video-poster.jpg"
-              aria-label="Sukoon herbal tightening gel — product film"
+              aria-label="RoseCare herbal tightening gel — product film"
             >
               <source
                 src="/videos/hero-video-m.webm"
@@ -125,7 +125,7 @@ export function Hero() {
             <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-4 pb-3 text-center md:px-5 md:pb-4">
               <p className="animate-fade-up flex items-center gap-2.5 text-[10px] font-semibold uppercase leading-[1.1] tracking-[0.3em] text-white/90 [text-shadow:0_1px_3px_rgba(0,0,0,0.6)] [animation-delay:150ms] md:text-[11px]">
                 <span aria-hidden className="h-px w-6 bg-white/50" />
-                Sukoon · Intimate care
+                RoseCare · Intimate care
                 <span aria-hidden className="h-px w-6 bg-white/50" />
               </p>
               <p className="animate-fade-up mt-2 font-display text-[1.15rem] leading-[1.2] text-white [text-shadow:0_1px_4px_rgba(0,0,0,0.55),0_0_24px_rgba(0,0,0,0.25)] [animation-delay:280ms] md:text-[1.45rem]">

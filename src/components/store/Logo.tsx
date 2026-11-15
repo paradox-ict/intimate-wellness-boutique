@@ -6,7 +6,7 @@ export function Logo({ className, invert = false }: { className?: string; invert
     <Link
       to="/"
       className={cn("group inline-flex items-center gap-2", className)}
-      aria-label="Sukoon home"
+      aria-label="RoseCare home"
     >
       <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand shadow-glow transition-transform duration-500 group-hover:rotate-12">
         <svg
@@ -28,7 +28,7 @@ export function Logo({ className, invert = false }: { className?: string; invert
           invert ? "text-ink-foreground" : "text-foreground",
         )}
       >
-        Sukoon
+        RoseCare
       </span>
     </Link>
   );

@@ -33,13 +33,13 @@ import productImg from "@/assets/product-pack-m.jpg";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Secure Checkout — Sukoon" },
+      { title: "Secure Checkout — RoseCare" },
       {
         name: "description",
         content:
           "Complete your discreet order. Cash on Delivery or Easypaisa, delivered in plain packaging.",
       },
-      { property: "og:title", content: "Secure Checkout — Sukoon" },
+      { property: "og:title", content: "Secure Checkout — RoseCare" },
       {
         property: "og:description",
         content: "Discreet checkout with Cash on Delivery or Easypaisa.",

@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — Sukoon" },
-      { name: "description", content: "Sukoon store administration." },
-      { property: "og:title", content: "Admin — Sukoon" },
+      { title: "Admin — RoseCare" },
+      { name: "description", content: "RoseCare store administration." },
+      { property: "og:title", content: "Admin — RoseCare" },
       { property: "og:description", content: "Store administration." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

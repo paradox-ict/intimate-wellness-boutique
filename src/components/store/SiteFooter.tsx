@@ -71,7 +71,7 @@ export function SiteFooter() {
         </div>
         <div className="mt-14 flex flex-col gap-3 border-t border-ink-foreground/10 pt-6 text-xs text-ink-foreground/50 md:flex-row md:justify-between">
           <p>
-            © {new Date().getFullYear()} Sukoon Wellness. Read the leaflet before use. Not a
+            © {new Date().getFullYear()} RoseCare Wellness. Read the leaflet before use. Not a
             substitute for medical advice.
           </p>
           <p>Bank statements and parcels never show the product name.</p>

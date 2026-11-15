@@ -83,20 +83,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sukoon — Herbal Intimate Care Gel | Pakistan" },
+      { title: "RoseCare — Herbal Intimate Care Gel | Pakistan" },
       {
         name: "description",
         content:
           "Herbal intimate care gel with discreet packaging and confidential delivery across Pakistan. Cash on Delivery & Easypaisa.",
       },
-      { property: "og:title", content: "Sukoon — Herbal Intimate Care Gel" },
+      { property: "og:title", content: "RoseCare — Herbal Intimate Care Gel" },
       {
         property: "og:description",
         content: "Discreet, herbal intimate care. Delivered confidentially across Pakistan.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://intimate-wellness-boutique-gamma.vercel.app" },
-      { property: "og:site_name", content: "Sukoon" },
+      { property: "og:url", content: "https://rosecare.store" },
+      { property: "og:site_name", content: "RoseCare" },
       { property: "og:locale", content: "en_PK" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#f7efe8" },

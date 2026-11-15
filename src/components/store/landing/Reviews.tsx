@@ -3,7 +3,7 @@ import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "./SectionHeading";
 
-// No invented reviews: Sukoon has no approved customer reviews yet. Real
+// No invented reviews: RoseCare has no approved customer reviews yet. Real
 // reviews from verified buyers will appear here once orders are delivered.
 export function Reviews() {
   return (
@@ -25,7 +25,7 @@ export function Reviews() {
             <h3 className="mt-6 font-display text-2xl sm:text-3xl">No reviews yet</h3>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
               Every review here will come from a real, verified order — never written by us. As
-              Sukoon orders are delivered, honest words from buyers will appear in this space.
+              RoseCare orders are delivered, honest words from buyers will appear in this space.
             </p>
             <Button variant="hero" size="xl" className="mt-8" asChild>
               <a href="#bundles">Be one of the first to try it</a>

@@ -12,9 +12,9 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Admin Sign In — Sukoon" },
-      { name: "description", content: "Sign in to manage Sukoon orders, stock and payments." },
-      { property: "og:title", content: "Admin Sign In — Sukoon" },
+      { title: "Admin Sign In — RoseCare" },
+      { name: "description", content: "Sign in to manage RoseCare orders, stock and payments." },
+      { property: "og:title", content: "Admin Sign In — RoseCare" },
       { property: "og:description", content: "Store admin access." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

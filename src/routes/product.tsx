@@ -34,13 +34,13 @@ import lifestyleM from "@/assets/product-lifestyle-m.jpg";
 export const Route = createFileRoute("/product")({
   head: () => ({
     meta: [
-      { title: "Herbal Tightening Gel — Buy Online | Sukoon" },
+      { title: "Herbal Tightening Gel — Buy Online | RoseCare" },
       {
         name: "description",
         content:
-          "Sukoon herbal tightening gel in single-use applicators: antibacterial, cleansing, moisturising, tightening. CE & ISO 9001. COD & Easypaisa, plain packaging.",
+          "RoseCare herbal tightening gel in single-use applicators: antibacterial, cleansing, moisturising, tightening. CE & ISO 9001. COD & Easypaisa, plain packaging.",
       },
-      { property: "og:title", content: "Herbal Tightening Gel — Sukoon" },
+      { property: "og:title", content: "Herbal Tightening Gel — RoseCare" },
       {
         property: "og:description",
         content:
@@ -51,9 +51,9 @@ export const Route = createFileRoute("/product")({
       { property: "og:image", content: `${SITE_URL}/images/og-image.jpg` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "828" },
-      { property: "og:image:alt", content: "Sukoon herbal tightening gel applicator on silk with herbs and a flower" },
+      { property: "og:image:alt", content: "RoseCare herbal tightening gel applicator on silk with herbs and a flower" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Herbal Tightening Gel — Sukoon" },
+      { name: "twitter:title", content: "Herbal Tightening Gel — RoseCare" },
       {
         name: "twitter:description",
         content:
@@ -68,10 +68,10 @@ export const Route = createFileRoute("/product")({
 });
 
 const SHOTS = [
-  { src: pack, srcM: packM, alt: "Sukoon gel pouches with applicator", label: "The pack" },
+  { src: pack, srcM: packM, alt: "RoseCare gel pouches with applicator", label: "The pack" },
   { src: applicators, srcM: applicatorsM, alt: "Two pre-filled applicators", label: "Applicators" },
   { src: diagram, srcM: diagramM, alt: "Gel pouches and applicator diagram", label: "Inside the pack" },
-  { src: benefitsImg, srcM: benefitsM, alt: "Sukoon gel — the seven benefits", label: "Benefits" },
+  { src: benefitsImg, srcM: benefitsM, alt: "RoseCare gel — the seven benefits", label: "Benefits" },
 ];
 
 function ProductPage() {
@@ -94,12 +94,12 @@ function ProductPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: "Sukoon Herbal Tightening Gel",
+    name: "RoseCare Herbal Tightening Gel",
     description:
       "Herbal vaginal tightening gel in single-use applicators. Antibacterial, cleansing, moisturising, tightening, anti-itching, odour removal and lubricating. CE & ISO 9001.",
     url: `${SITE_URL}/product`,
     image: `${SITE_URL}/images/og-image.jpg`,
-    brand: { "@type": "Brand", name: "Sukoon" },
+    brand: { "@type": "Brand", name: "RoseCare" },
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: "PKR",
@@ -182,7 +182,7 @@ function ProductPage() {
           {/* Info */}
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-              Sukoon · Intimate care
+              RoseCare · Intimate care
             </p>
             <h1 className="mt-3 text-4xl font-light leading-[1.05] sm:text-5xl">
               Herbal Tightening Gel
@@ -318,7 +318,7 @@ function ProductPage() {
               {
                 src: lifestyle,
                 srcM: lifestyleM,
-                alt: "Sukoon gel in everyday use",
+                alt: "RoseCare gel in everyday use",
                 caption: "Made for quiet, everyday routines",
               },
             ].map((s) => (

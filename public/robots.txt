@@ -25,4 +25,4 @@ Disallow: /auth
 Disallow: /checkout
 Disallow: /order-success
 
-Sitemap: https://intimate-wellness-boutique-gamma.vercel.app/sitemap.xml
+Sitemap: https://rosecare.store/sitemap.xml
