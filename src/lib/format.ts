@@ -18,6 +18,31 @@ export function normalizePkPhone(input: string): string | null {
   return /^03\d{9}$/.test(d) ? d : null;
 }
 
+/**
+ * Join a street address and city for display, without repeating the city
+ * when the address already ends with it ("House 12, Street 3, Satellite
+ * Town, Rawalpindi" + "Rawalpindi" → the address alone). Case-insensitive,
+ * ignores trailing spaces and punctuation, and the city must appear as a
+ * whole word at the end — so an address ending in "Rawalpindi" never eats
+ * a city of "Pindi".
+ */
+export function formatDisplayAddress(address: string, city: string): string {
+  const a = address.trim();
+  const c = city.trim();
+  if (!c) return a;
+  if (!a) return c;
+  const stripped = a.replace(/[.,\s]+$/, "");
+  const lower = stripped.toLowerCase();
+  const cityLower = c.toLowerCase();
+  if (lower === cityLower) return stripped;
+  if (lower.endsWith(cityLower)) {
+    const before = stripped.slice(0, stripped.length - c.length);
+    // Whole-word check: the character before the city must be a separator.
+    if (before === "" || /[\s,.;:()/-]$/.test(before)) return stripped;
+  }
+  return `${a}, ${c}`;
+}
+
 export type BundleForPricing = { price: number; pieces: number; free_delivery: boolean };
 
 export type DeliveryFees = { cod: number; easypaisa: number };

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeTotals, formatPkPhoneDisplay, normalizePkPhone } from "./format";
+import {
+  computeTotals,
+  formatDisplayAddress,
+  formatPkPhoneDisplay,
+  normalizePkPhone,
+} from "./format";
 
 describe("Pakistani phone numbers", () => {
   it("accepts 03XX formats and +92 formats, normalising to 03XXXXXXXXX", () => {
@@ -96,5 +101,41 @@ describe("Order totals", () => {
       advanceDue: 400,
       balanceDue: 9300,
     });
+  });
+});
+
+describe("formatDisplayAddress", () => {
+  it("does not repeat the city when the address already ends with it", () => {
+    expect(
+      formatDisplayAddress("House 12, Street 3, Satellite Town, Rawalpindi", "Rawalpindi"),
+    ).toBe("House 12, Street 3, Satellite Town, Rawalpindi");
+  });
+  it("is case-insensitive and ignores trailing punctuation and spaces", () => {
+    expect(formatDisplayAddress("House 12, rawalpindi. ", "Rawalpindi")).toBe(
+      "House 12, rawalpindi",
+    );
+    expect(formatDisplayAddress("House 12, Rawalpindi,", "Rawalpindi")).toBe(
+      "House 12, Rawalpindi",
+    );
+  });
+  it("returns the city alone when the address is just the city", () => {
+    expect(formatDisplayAddress("Rawalpindi", "Rawalpindi")).toBe("Rawalpindi");
+  });
+  it("keeps the city when it is not at the end of the address", () => {
+    expect(formatDisplayAddress("House 12, Rawalpindi Road", "Rawalpindi")).toBe(
+      "House 12, Rawalpindi Road, Rawalpindi",
+    );
+    expect(formatDisplayAddress("House 12, Street 4, Gulberg III", "Lahore")).toBe(
+      "House 12, Street 4, Gulberg III, Lahore",
+    );
+  });
+  it("does not treat a city as the suffix of a longer word", () => {
+    expect(formatDisplayAddress("House 12, Rawalpindi", "Pindi")).toBe(
+      "House 12, Rawalpindi, Pindi",
+    );
+  });
+  it("handles empty parts", () => {
+    expect(formatDisplayAddress("House 12", "")).toBe("House 12");
+    expect(formatDisplayAddress("", "Rawalpindi")).toBe("Rawalpindi");
   });
 });

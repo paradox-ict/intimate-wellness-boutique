@@ -7,7 +7,7 @@ import { CheckCircle2, Copy, ExternalLink, Loader2, MapPin, Phone, XCircle } fro
 import { supabase } from "@/integrations/supabase/client";
 import { notifyOrderStatus } from "@/lib/store.functions";
 import { orderEventsQuery, adminSettingsQuery, type Order } from "@/lib/admin-queries";
-import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, formatPKR } from "@/lib/format";
+import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, formatDisplayAddress, formatPKR } from "@/lib/format";
 import { copyText } from "@/lib/utils";
 import {
   Sheet,
@@ -210,9 +210,7 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
               {order.email && <p className="text-muted-foreground">{order.email}</p>}
               <p className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                <span>
-                  {order.address}, <span className="font-medium">{order.city}</span>
-                </span>
+                <span>{formatDisplayAddress(order.address, order.city)}</span>
               </p>
               {order.notes && (
                 <p className="rounded-xl bg-muted p-3 text-muted-foreground">“{order.notes}”</p>

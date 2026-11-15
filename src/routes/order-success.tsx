@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Check, Copy, Lock, PackageSearch } from "lucide-react";
@@ -6,7 +7,9 @@ import { toast } from "sonner";
 import { StoreShell } from "@/components/store/StoreShell";
 import { WhatsAppIcon } from "@/components/store/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
-import { formatPKR } from "@/lib/format";
+import { formatPKR, normalizePkPhone } from "@/lib/format";
+import { trackOrder } from "@/lib/store.functions";
+import { trackedToSuccessDetails } from "@/lib/success-details";
 import { copyText } from "@/lib/utils";
 import { WHATSAPP_URL } from "@/lib/whatsapp";
 
@@ -26,7 +29,13 @@ type LastOrder = {
 };
 
 export const Route = createFileRoute("/order-success")({
-  validateSearch: z.object({ order: z.string().max(20).optional() }),
+  // The phone rides in the URL too (same pattern as the track deep-link)
+  // so a fresh load can fetch the full breakdown when sessionStorage is
+  // empty — a reload, a new tab, or a shared link.
+  validateSearch: z.object({
+    order: z.string().max(20).optional(),
+    phone: z.string().max(15).optional(),
+  }),
   head: () => ({
     meta: [
       { title: "Thank You — Your Order Is Placed | RoseCare" },
@@ -46,29 +55,63 @@ export const Route = createFileRoute("/order-success")({
 
 function SuccessPage() {
   const search = Route.useSearch();
+  const lookup = useServerFn(trackOrder);
   const [stored, setStored] = useState<LastOrder | null>(null);
+  // Fetched via trackOrder when sessionStorage has nothing for this order
+  // (reload / new tab / shared link) — the full breakdown, from the server.
+  const [fetched, setFetched] = useState<LastOrder | null>(null);
+  const [fetching, setFetching] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    let storedOrder: LastOrder | null = null;
     try {
-      setStored(JSON.parse(sessionStorage.getItem("sukoon-last-order") ?? "null"));
+      storedOrder = JSON.parse(sessionStorage.getItem("sukoon-last-order") ?? "null");
     } catch {
       /* ignore */
     }
+    setStored(storedOrder);
     setLoaded(true);
+    // sessionStorage is the fast path. On a miss, fetch the order with the
+    // order number + phone from the URL — the same lookup the track page
+    // uses. Without a phone there is nothing to look up, so the page keeps
+    // the neutral copy as before.
+    const phone = search.phone ? normalizePkPhone(search.phone) : null;
+    if (search.order && phone && storedOrder?.orderNumber !== search.order) {
+      setFetching(true);
+      lookup({ data: { orderNumber: search.order, phone } })
+        .then((res) => {
+          if (cancelled || !res.order) return;
+          setFetched({
+            orderNumber: res.order.order_number,
+            ...trackedToSuccessDetails(res.order, phone),
+          });
+        })
+        .catch(() => {
+          /* lookup failed — the neutral copy stays, no breakdown is guessed */
+        })
+        .finally(() => {
+          if (!cancelled) setFetching(false);
+        });
+    }
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // The order number lives in the URL (?order=SK-XXXXXX) so it survives a
-  // refresh, a shared link, or a cleared tab — sessionStorage is only a
-  // fallback for the total / payment method details.
+  // refresh, a shared link, or a cleared tab — sessionStorage is the fast
+  // path for the breakdown, the trackOrder fetch is the fallback, and the
+  // bare order number is the last resort (neutral copy, no amounts).
   const orderNumber = search.order ?? stored?.orderNumber ?? null;
+  const storedMatch = stored && stored.orderNumber === orderNumber ? stored : null;
   const order: LastOrder | null =
-    orderNumber && stored && stored.orderNumber === orderNumber
-      ? stored
-      : orderNumber
-        ? { orderNumber, total: 0, paymentMethod: "cod", phone: "" }
-        : null;
-  const hasDetails = !!stored && stored.orderNumber === orderNumber;
+    storedMatch ??
+    fetched ??
+    (orderNumber ? { orderNumber, total: 0, paymentMethod: "cod", phone: "" } : null);
+  const hasDetails = !!(storedMatch ?? fetched);
 
   // Every Track link on the page — header, mobile menu, footer — must carry
   // the order number, not just the main Track button. The phone rides along
@@ -111,7 +154,9 @@ function SuccessPage() {
                     : order.freeDelivery
                       ? "Your Rs 400 advance via Easypaisa is being verified. It comes off your pack price — delivery is free on this pack — so please pay the remaining balance in cash when your parcel arrives."
                       : "Your Rs 400 advance via Easypaisa is being verified. Once confirmed, we'll pack and dispatch your order — please pay the remaining product price in cash when your parcel arrives."
-                  : "Your order is placed. Your receipt was emailed to you — it has your order number and the amount to pay."}
+                  : fetching
+                    ? "Loading your order details…"
+                    : "Your order is placed. Your receipt was emailed to you — it has your order number and the amount to pay."}
               </p>
               <div className="mt-8 rounded-3xl border border-border/70 bg-card p-6 text-left shadow-card">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">

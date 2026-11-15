@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, PackageSearch } from "lucide-react";
@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trackOrder, type TrackedOrder } from "@/lib/store.functions";
 import { resolveTrackStart } from "@/lib/track-start";
+import { autoCopyWithGestureRetry } from "@/lib/auto-copy";
 import { formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
-import { copyText } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/track")({
@@ -52,6 +52,11 @@ function TrackPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<TrackedOrder | null>(null);
+  // Cleanup for the email-link auto-copy retry listener (Finding 1).
+  const autoCopyCleanupRef = useRef<(() => void) | null>(null);
+
+  // Disarm the auto-copy retry when the page unmounts.
+  useEffect(() => () => autoCopyCleanupRef.current?.(), []);
 
   const reset = () => {
     setOrder(null);
@@ -62,6 +67,10 @@ function TrackPage() {
 
   const run = async (num: string, ph: string, autoCopy = false) => {
     setError(null);
+    // A new lookup supersedes any pending auto-copy retry from an
+    // earlier one (the retry belongs to that order number).
+    autoCopyCleanupRef.current?.();
+    autoCopyCleanupRef.current = null;
     if (num.trim().length < 4) return setError("Enter your order number");
     if (!normalizePkPhone(ph)) return setError("Enter the mobile number used at checkout");
     // A lookup in flight must never show the previous order — clear it so
@@ -74,15 +83,13 @@ function TrackPage() {
       setOrder(res.order);
       if (res.order && autoCopy) {
         // Email-link flow: the customer tapped Track in their email, so
-        // copy the order number for them — no tap, no long-press. If the
-        // browser blocks it (some need a tap first), fail silently; the
-        // copy button on the order is the fallback.
-        try {
-          const ok = await copyText(num.trim().toUpperCase());
-          if (ok) toast.success("Order number copied to clipboard");
-        } catch {
-          /* blocked — the on-page copy button is the fallback */
-        }
+        // copy the order number for them — no tap, no long-press. The
+        // helper tries immediately and, if the browser blocks it (a page
+        // load from an email link has no gesture/focus), retries on the
+        // first tap on the page. The copy button is the fallback.
+        autoCopyCleanupRef.current = autoCopyWithGestureRetry(num.trim().toUpperCase(), {
+          onCopied: () => toast.success("Order number copied to clipboard"),
+        });
       }
     } catch {
       setError("Something went wrong. Please try again.");

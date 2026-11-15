@@ -216,8 +216,10 @@ function CheckoutPage() {
       );
       clear();
       // Order number in the URL so the success page shows it even after a
-      // refresh or when the link is shared.
-      navigate({ to: "/order-success", search: { order: res.orderNumber } });
+      // refresh or when the link is shared — the phone rides along too, so
+      // a fresh load can fetch the full breakdown when sessionStorage is
+      // empty (same pattern as the track deep-link).
+      navigate({ to: "/order-success", search: { order: res.orderNumber, phone: res.phone } });
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong. Please check your details and try again.");

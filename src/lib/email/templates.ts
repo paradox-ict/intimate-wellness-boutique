@@ -1,7 +1,7 @@
 // Branded RoseCare emails — pure functions, no I/O, safe to import anywhere.
 // All HTML uses inline styles only (email clients strip <style> blocks).
 // Every template returns a plain-text fallback too.
-import { formatPKR } from "../format";
+import { formatDisplayAddress, formatPKR } from "../format";
 import { SITE_URL } from "../site";
 import { WHATSAPP_URL } from "../whatsapp";
 
@@ -223,7 +223,7 @@ ${button(trackUrl, "Track your order")}
 ${itemsTable(o)}
 <div style="margin-top:18px;">${paymentHtml}</div>
 <h2 style="font-family:Georgia,'Times New Roman',serif;font-size:18px;margin:22px 0 8px;">Delivering to</h2>
-<p style="font-size:15px;line-height:1.6;margin:0;">${esc(o.customer_name)}<br>${esc(o.address)}, ${esc(o.city)}<br>${esc(o.phone)}</p>
+<p style="font-size:15px;line-height:1.6;margin:0;">${esc(o.customer_name)}<br>${esc(formatDisplayAddress(o.address, o.city))}<br>${esc(o.phone)}</p>
 <h2 style="font-family:Georgia,'Times New Roman',serif;font-size:18px;margin:22px 0 8px;">What happens next</h2>
 <ol style="font-size:15px;line-height:1.8;margin:0;padding-left:20px;">
 <li>${o.payment_method === "cod" ? `We verify your ${formatPKR(o.cod_advance)} Easypaisa advance and confirm your order, then pack it discreetly in a plain, unbranded box.` : "We confirm your order and pack it discreetly in a plain, unbranded box."}</li>
@@ -244,7 +244,7 @@ ${itemsTable(o)}
     ``,
     `Delivering to:`,
     `${o.customer_name}`,
-    `${o.address}, ${o.city}`,
+    `${formatDisplayAddress(o.address, o.city)}`,
     `${o.phone}`,
     ``,
     `What happens next:`,
@@ -401,7 +401,7 @@ export function ownerNewOrderEmail(
 <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.3;margin:8px 0 4px;font-weight:600;">New order ${esc(o.order_number)}</h1>
 <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">A customer just placed an order on RoseCare.${date ? ` Placed on ${esc(date)}.` : ""}</p>
 <h2 style="font-family:Georgia,'Times New Roman',serif;font-size:18px;margin:18px 0 8px;">Customer</h2>
-<p style="font-size:15px;line-height:1.7;margin:0;"><strong>${esc(o.customer_name)}</strong><br>Phone: <a href="tel:${esc(o.phone)}" style="color:#c2185b;">${esc(o.phone)}</a><br>Email: <a href="mailto:${esc(o.email ?? "")}" style="color:#c2185b;">${esc(o.email ?? "—")}</a><br>${esc(o.address)}, ${esc(o.city)}</p>
+<p style="font-size:15px;line-height:1.7;margin:0;"><strong>${esc(o.customer_name)}</strong><br>Phone: <a href="tel:${esc(o.phone)}" style="color:#c2185b;">${esc(o.phone)}</a><br>Email: <a href="mailto:${esc(o.email ?? "")}" style="color:#c2185b;">${esc(o.email ?? "—")}</a><br>${esc(formatDisplayAddress(o.address, o.city))}</p>
 ${o.notes ? `<p style="font-size:15px;line-height:1.6;margin:10px 0 0;background-color:#f7efe8;border-radius:10px;padding:10px 14px;">&ldquo;${esc(o.notes)}&rdquo;</p>` : ""}
 <h2 style="font-family:Georgia,'Times New Roman',serif;font-size:18px;margin:22px 0 8px;">Order</h2>
 ${itemsTable(o)}
@@ -415,7 +415,7 @@ ${button(adminUrl, "View order in admin")}`;
     `Customer: ${o.customer_name}`,
     `Phone: ${o.phone}`,
     `Email: ${o.email ?? "—"}`,
-    `Address: ${o.address}, ${o.city}`,
+    `Address: ${formatDisplayAddress(o.address, o.city)}`,
     o.notes ? `Note: "${o.notes}"` : "",
     ``,
     itemsText(o),

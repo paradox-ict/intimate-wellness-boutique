@@ -71,6 +71,22 @@ describe("order confirmation email", () => {
     expect(e.text).not.toContain("<div");
   });
 
+  it("does not repeat the city when the address already ends with it", () => {
+    const dup: OrderEmailData = {
+      ...sampleOrder,
+      address: "House 12, Street 3, Satellite Town, Rawalpindi",
+      city: "Rawalpindi",
+    };
+    const e = orderConfirmationEmail(dup, easypaisa);
+    expect(e.html).toContain("House 12, Street 3, Satellite Town, Rawalpindi");
+    expect(e.html).not.toContain("Rawalpindi, Rawalpindi");
+    expect(e.text).toContain("House 12, Street 3, Satellite Town, Rawalpindi");
+    expect(e.text).not.toContain("Rawalpindi, Rawalpindi");
+    const owner = ownerNewOrderEmail(dup, easypaisa);
+    expect(owner.html).not.toContain("Rawalpindi, Rawalpindi");
+    expect(owner.text).not.toContain("Rawalpindi, Rawalpindi");
+  });
+
   it("free-delivery Trio COD: total stays the pack price, Rs 400 advance comes off it", () => {
     const trio: OrderEmailData = {
       ...sampleOrder,
