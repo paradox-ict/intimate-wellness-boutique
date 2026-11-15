@@ -88,7 +88,7 @@ function ProductPage() {
     "Discreet plain packaging",
     "Cash on Delivery",
     `Easypaisa to ${data.settings.easypaisa_number} — ${data.settings.easypaisa_account_name}`,
-    "Free delivery on Trio & Ritual",
+    "Delivery Rs 300 (Easypaisa) · Rs 400 (COD)",
     "CE · ISO 9001",
   ];
   const jsonLd = {
@@ -239,7 +239,6 @@ function ProductPage() {
                           </span>
                           <span className="mt-0.5 block text-sm text-muted-foreground">
                             {b.tagline} · {b.pieces} applicator{b.pieces > 1 ? "s" : ""}
-                            {b.free_delivery ? " · Free delivery" : ""}
                           </span>
                         </span>
                         <span className="shrink-0 text-right">

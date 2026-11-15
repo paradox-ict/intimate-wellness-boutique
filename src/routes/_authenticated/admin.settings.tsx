@@ -19,7 +19,8 @@ function SettingsPage() {
   const [f, setF] = useState({
     easypaisa_account_name: "",
     easypaisa_number: "",
-    delivery_fee: "",
+    cod_delivery_fee: "",
+    easypaisa_delivery_fee: "",
     support_whatsapp: "",
   });
   const [busy, setBusy] = useState(false);
@@ -29,7 +30,8 @@ function SettingsPage() {
       setF({
         easypaisa_account_name: data.easypaisa_account_name,
         easypaisa_number: data.easypaisa_number,
-        delivery_fee: String(data.delivery_fee),
+        cod_delivery_fee: String(data.cod_delivery_fee ?? 400),
+        easypaisa_delivery_fee: String(data.easypaisa_delivery_fee ?? 300),
         support_whatsapp: data.support_whatsapp,
       });
   }, [data]);
@@ -38,8 +40,14 @@ function SettingsPage() {
     setF((p) => ({ ...p, [k]: e.target.value }));
 
   const save = async () => {
-    const fee = parseInt(f.delivery_fee, 10);
-    if (!f.easypaisa_number.trim() || !f.easypaisa_account_name.trim() || !(fee >= 0)) {
+    const codFee = parseInt(f.cod_delivery_fee, 10);
+    const epFee = parseInt(f.easypaisa_delivery_fee, 10);
+    if (
+      !f.easypaisa_number.trim() ||
+      !f.easypaisa_account_name.trim() ||
+      !(codFee >= 0) ||
+      !(epFee >= 0)
+    ) {
       toast.error("Fill in all fields");
       return;
     }
@@ -49,7 +57,8 @@ function SettingsPage() {
       .update({
         easypaisa_account_name: f.easypaisa_account_name.trim(),
         easypaisa_number: f.easypaisa_number.trim(),
-        delivery_fee: fee,
+        cod_delivery_fee: codFee,
+        easypaisa_delivery_fee: epFee,
         support_whatsapp: f.support_whatsapp.trim(),
       })
       .eq("id", 1);
@@ -92,19 +101,44 @@ function SettingsPage() {
         </div>
       </section>
       <section className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-card sm:p-6">
-        <h2 className="text-xl font-light">Delivery & support</h2>
+        <h2 className="text-xl font-light">Delivery fees</h2>
+        <p className="text-sm text-muted-foreground">
+          Flat per order, for every pack. COD customers pay the COD fee now via Easypaisa to
+          confirm their order, then pay the product price in cash on delivery. Easypaisa customers
+          pay the full total — product + delivery — in advance.
+        </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label>Delivery fee (Rs)</Label>
+            <Label>COD delivery fee (Rs)</Label>
             <Input
               type="number"
               min={0}
-              value={f.delivery_fee}
-              onChange={set("delivery_fee")}
+              value={f.cod_delivery_fee}
+              onChange={set("cod_delivery_fee")}
               className="h-11 rounded-xl"
             />
-            <p className="text-xs text-muted-foreground">Charged on packs without free delivery.</p>
+            <p className="text-xs text-muted-foreground">
+              Paid in advance via Easypaisa to confirm a COD order.
+            </p>
           </div>
+          <div className="space-y-1.5">
+            <Label>Easypaisa delivery fee (Rs)</Label>
+            <Input
+              type="number"
+              min={0}
+              value={f.easypaisa_delivery_fee}
+              onChange={set("easypaisa_delivery_fee")}
+              className="h-11 rounded-xl"
+            />
+            <p className="text-xs text-muted-foreground">
+              Part of the full total paid in advance by Easypaisa.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section className="space-y-4 rounded-3xl border border-border bg-card p-5 shadow-card sm:p-6">
+        <h2 className="text-xl font-light">Support</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Support WhatsApp</Label>
             <Input

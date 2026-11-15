@@ -66,7 +66,7 @@ describe("isValidOtpCode", () => {
     expect(isValidOtpCode("95970085")).toBe(true);
   });
 
-  it("still accepts a 6-digit code, defensively", () => {
+  it("still accepts a shorter legacy code, defensively", () => {
     expect(isValidOtpCode("123456")).toBe(true);
   });
 

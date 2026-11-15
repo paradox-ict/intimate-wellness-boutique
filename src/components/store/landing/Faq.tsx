@@ -18,7 +18,7 @@ export const FAQS = [
   },
   {
     q: "How often should I use it?",
-    a: "One applicator every 2–3 days, or as directed on the leaflet. A Trio or Ritual pack covers a complete care cycle.",
+    a: "One applicator every 2–3 days, or as directed on the leaflet. A Trio or Double pack covers a complete care cycle.",
   },
   {
     q: "Is it safe? What is it made of?",
@@ -26,11 +26,15 @@ export const FAQS = [
   },
   {
     q: "How does Easypaisa payment work?",
-    a: "At checkout choose Easypaisa, send the exact total to our Easypaisa account, then enter your transaction ID and/or upload the receipt screenshot. We verify and confirm your order, usually within a few hours.",
+    a: "At checkout choose Easypaisa and send the full total — product price plus Rs 300 delivery — to our Easypaisa account, then enter your transaction ID and/or upload the receipt screenshot. We verify and confirm your order, usually within a few hours.",
   },
   {
     q: "Can I pay on delivery?",
-    a: "Yes. Cash on Delivery is available all over Pakistan. You pay the rider when your parcel arrives.",
+    a: "Yes. Cash on Delivery is available all over Pakistan. To confirm your order, first send the Rs 400 delivery charge via Easypaisa — then pay only the product price in cash when your parcel arrives.",
+  },
+  {
+    q: "Why do I pay Rs 400 in advance for COD?",
+    a: "The Rs 400 is the delivery charge itself, not an extra fee — it is the cost of getting your parcel to you. Sending it in advance through Easypaisa confirms your order is genuine, so we can pack and dispatch it. You then pay only the product price in cash on delivery, nothing more.",
   },
   {
     q: "How long does delivery take?",

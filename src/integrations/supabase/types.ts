@@ -194,8 +194,10 @@ export type Database = {
       }
       store_settings: {
         Row: {
+          cod_delivery_fee: number
           delivery_fee: number
           easypaisa_account_name: string
+          easypaisa_delivery_fee: number
           easypaisa_number: string
           id: number
           low_stock_threshold: number
@@ -204,8 +206,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cod_delivery_fee?: number
           delivery_fee?: number
           easypaisa_account_name?: string
+          easypaisa_delivery_fee?: number
           easypaisa_number?: string
           id?: number
           low_stock_threshold?: number
@@ -214,8 +218,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cod_delivery_fee?: number
           delivery_fee?: number
           easypaisa_account_name?: string
+          easypaisa_delivery_fee?: number
           easypaisa_number?: string
           id?: number
           low_stock_threshold?: number

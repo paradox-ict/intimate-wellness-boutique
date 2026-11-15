@@ -144,7 +144,6 @@ function BundleEditor({ bundle, onSaved }: { bundle: Bundle; onSaved: () => void
     compare_at_price: bundle.compare_at_price ? String(bundle.compare_at_price) : "",
     badge: bundle.badge ?? "",
     sort_order: String(bundle.sort_order),
-    free_delivery: bundle.free_delivery,
     is_active: bundle.is_active,
   });
   const [busy, setBusy] = useState(false);
@@ -170,7 +169,6 @@ function BundleEditor({ bundle, onSaved }: { bundle: Bundle; onSaved: () => void
         compare_at_price: compare,
         badge: f.badge.trim() || null,
         sort_order: parseInt(f.sort_order, 10) || 0,
-        free_delivery: f.free_delivery,
         is_active: f.is_active,
       })
       .eq("id", bundle.id);
@@ -264,13 +262,6 @@ function BundleEditor({ bundle, onSaved }: { bundle: Bundle; onSaved: () => void
           />
         </div>
       </div>
-      <label className="flex items-center justify-between rounded-xl bg-muted px-4 py-3 text-sm">
-        Free delivery on this pack{" "}
-        <Switch
-          checked={f.free_delivery}
-          onCheckedChange={(v) => setF((p) => ({ ...p, free_delivery: v }))}
-        />
-      </label>
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">
           {parseInt(f.pieces) > 0 && parseInt(f.price) >= 0

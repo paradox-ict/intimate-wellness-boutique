@@ -35,7 +35,7 @@ export function Bundles() {
               Save more with a <em className="text-brand">full cycle</em>
             </>
           }
-          intro="Every pack ships in plain, unbranded packaging. Pay on delivery or via Easypaisa."
+          intro="Every pack ships in plain, unbranded packaging. COD with a Rs 400 Easypaisa advance, or pay in full via Easypaisa."
         />
 
         {settings.low_stock && (
@@ -127,18 +127,8 @@ export function Bundles() {
                         Save {formatPKR(save)}
                       </span>
                     )}
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2.5 py-1",
-                        b.free_delivery
-                          ? "bg-accent text-accent-foreground"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      <Truck className="h-3 w-3" />{" "}
-                      {b.free_delivery
-                        ? "Free delivery"
-                        : `Delivery ${formatPKR(settings.delivery_fee)}`}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                      <Truck className="h-3 w-3" /> Delivery Rs 300 Easypaisa · Rs 400 COD
                     </span>
                   </div>
                   {/* Direct Buy Now on every card — buys this bundle straight

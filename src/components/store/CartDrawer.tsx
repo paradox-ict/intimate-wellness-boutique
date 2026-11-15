@@ -21,7 +21,14 @@ export function CartDrawer() {
   const { data } = useQuery(storefrontQuery);
   const bundle = data?.bundles.find((b) => b.id === line?.bundleId);
   const totals =
-    bundle && line ? computeTotals(bundle, line.quantity, data!.settings.delivery_fee) : null;
+    bundle && line
+      ? computeTotals(
+          bundle,
+          line.quantity,
+          { cod: data!.settings.cod_delivery_fee, easypaisa: data!.settings.easypaisa_delivery_fee },
+          "cod",
+        )
+      : null;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -115,18 +122,18 @@ export function CartDrawer() {
                     <Truck className="h-3.5 w-3.5" />
                     Delivery
                   </dt>
-                  <dd className="tabular-nums">
-                    {totals!.delivery === 0 ? (
-                      <span className="font-semibold text-sage">Free</span>
-                    ) : (
-                      formatPKR(totals!.delivery)
-                    )}
+                  <dd className="text-right text-xs leading-5 tabular-nums">
+                    Rs 300 Easypaisa · Rs 400 COD
                   </dd>
                 </div>
                 <div className="flex justify-between pt-2 text-base font-semibold">
                   <dt>Total</dt>
                   <dd className="tabular-nums">{formatPKR(totals!.total)}</dd>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Total shown is with Cash on Delivery. Exact total depends on your payment
+                  method — confirmed at checkout.
+                </p>
               </dl>
               <Button
                 variant="hero"

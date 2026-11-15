@@ -18,13 +18,39 @@ export function normalizePkPhone(input: string): string | null {
   return /^03\d{9}$/.test(d) ? d : null;
 }
 
-export type BundleForPricing = { price: number; pieces: number; free_delivery: boolean };
+export type BundleForPricing = { price: number; pieces: number };
 
-/** Mirrors the server-side pricing in the place_order database function. */
-export function computeTotals(bundle: BundleForPricing, quantity: number, deliveryFee: number) {
+export type DeliveryFees = { cod: number; easypaisa: number };
+
+export type PaymentMethod = "cod" | "easypaisa";
+
+/**
+ * Mirrors the server-side pricing in the place_order database function.
+ * The delivery fee depends on how the customer pays, flat per order:
+ * COD pays Rs 400 now via Easypaisa (that IS the delivery charge) and the
+ * product price in cash on delivery; Easypaisa prepaid pays Rs 300 delivery
+ * as part of the full total up front. Free delivery is retired — every pack
+ * pays the fee for its payment method.
+ */
+export function computeTotals(
+  bundle: BundleForPricing,
+  quantity: number,
+  fees: DeliveryFees,
+  method: PaymentMethod,
+) {
   const subtotal = bundle.price * quantity;
-  const delivery = bundle.free_delivery ? 0 : deliveryFee;
-  return { subtotal, delivery, total: subtotal + delivery, pieces: bundle.pieces * quantity };
+  const delivery = method === "cod" ? fees.cod : fees.easypaisa;
+  const total = subtotal + delivery;
+  return {
+    subtotal,
+    delivery,
+    total,
+    pieces: bundle.pieces * quantity,
+    // Amount the customer must send via Easypaisa right now to confirm.
+    advanceDue: method === "cod" ? delivery : total,
+    // Amount left to pay in cash when the parcel arrives (COD only).
+    balanceDue: method === "cod" ? subtotal : 0,
+  };
 }
 
 export const ORDER_STATUS_LABEL: Record<string, string> = {

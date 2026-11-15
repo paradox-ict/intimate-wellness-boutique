@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import type { TrackedOrder } from "@/lib/store.functions";
 import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, formatPKR } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { cn, copyText } from "@/lib/utils";
 
 const FLOW = ["pending", "confirmed", "processing", "shipped", "delivered"] as const;
 
@@ -22,9 +22,9 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Order</p>
           <button
             type="button"
-            onClick={() => {
-              navigator.clipboard?.writeText(order.order_number);
-              toast.success("✓ Copied");
+            onClick={async () => {
+              const ok = await copyText(order.order_number);
+              toast.success(ok ? "✓ Copied" : "Couldn't copy — long-press to copy it manually");
             }}
             className="flex items-center gap-2 font-display text-3xl hover:text-primary"
             aria-label="Copy order number"
@@ -46,7 +46,10 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
         </span>
       </div>
 
-      {order.payment_method === "easypaisa" && (
+      {/* Payment verification — for BOTH methods now. COD orders pay a Rs 400
+          Easypaisa advance to confirm, so they go through the same
+          verification as prepaid Easypaisa orders. */}
+      {order.payment_status !== "not_required" && (
         <div
           className={cn(
             "rounded-2xl p-4 text-sm",
@@ -57,10 +60,19 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
                 : "bg-warning/25 text-warning-foreground",
           )}
         >
-          <span className="font-semibold">Easypaisa: </span>
+          <span className="font-semibold">
+            {order.payment_method === "cod"
+              ? `COD advance (${formatPKR(order.delivery_fee)}): `
+              : "Easypaisa: "}
+          </span>
           {PAYMENT_STATUS_LABEL[order.payment_status]}
           {order.payment_status === "pending_verification" &&
             " — we usually confirm within a few hours."}
+          {order.payment_method === "cod" && (
+            <span className="mt-1 block">
+              Balance due on delivery: <strong>{formatPKR(order.subtotal)}</strong> (cash).
+            </span>
+          )}
         </div>
       )}
 
@@ -139,6 +151,23 @@ export function OrderTimeline({ order }: { order: TrackedOrder }) {
           <dt className="text-xs text-muted-foreground">Total</dt>
           <dd className="font-medium">{formatPKR(order.total)}</dd>
         </div>
+        {order.payment_method === "cod" ? (
+          <>
+            <div>
+              <dt className="text-xs text-muted-foreground">Advance (Easypaisa)</dt>
+              <dd className="font-medium">{formatPKR(order.delivery_fee)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Pay on delivery (cash)</dt>
+              <dd className="font-medium">{formatPKR(order.subtotal)}</dd>
+            </div>
+          </>
+        ) : (
+          <div>
+            <dt className="text-xs text-muted-foreground">Paid now (Easypaisa)</dt>
+            <dd className="font-medium">{formatPKR(order.total)}</dd>
+          </div>
+        )}
         <div>
           <dt className="text-xs text-muted-foreground">Payment</dt>
           <dd className="font-medium">

@@ -27,7 +27,7 @@ import { storefrontQuery } from "@/lib/storefront-query";
 import { placeOrder } from "@/lib/store.functions";
 import { computeTotals, formatPKR, formatPkPhoneDisplay, normalizePkPhone } from "@/lib/format";
 import { compressImage } from "@/lib/image";
-import { cn } from "@/lib/utils";
+import { cn, copyText } from "@/lib/utils";
 import productImg from "@/assets/product-pack-m.jpg";
 
 export const Route = createFileRoute("/checkout")({
@@ -104,7 +104,11 @@ function CheckoutPage() {
 
   const bundle = data.bundles.find((b) => b.id === line?.bundleId) ?? null;
   const qty = line?.quantity ?? 1;
-  const totals = bundle ? computeTotals(bundle, qty, data.settings.delivery_fee) : null;
+  const fees = {
+    cod: data.settings.cod_delivery_fee,
+    easypaisa: data.settings.easypaisa_delivery_fee,
+  };
+  const totals = bundle ? computeTotals(bundle, qty, fees, method) : null;
   const waNumber = data.settings.support_whatsapp.replace(/\D/g, "").replace(/^0/, "");
 
   const set =
@@ -158,8 +162,14 @@ function CheckoutPage() {
       e.email = "Enter a valid email address — we'll send your receipt and tracking updates there";
     if (form.city.trim().length < 2) e.city = "Please enter your city";
     if (form.address.trim().length < 8) e.address = "Please enter your full address";
-    if (method === "easypaisa" && !txnId.trim() && !proof)
-      e.payment = "Add your transaction ID or upload the receipt screenshot";
+    // Both methods send money via Easypaisa up front — COD sends the Rs 400
+    // confirmation advance, Easypaisa sends the full total — so both need a
+    // transaction ID or a receipt screenshot.
+    if (!txnId.trim() && !proof)
+      e.payment =
+        method === "cod"
+          ? "Add your Easypaisa transaction ID or a receipt screenshot for the Rs 400 advance"
+          : "Add your transaction ID or upload the receipt screenshot";
     return e;
   };
 
@@ -183,19 +193,22 @@ function CheckoutPage() {
           quantity: qty,
           ...form,
           paymentMethod: method,
-          txnId: method === "easypaisa" ? txnId : "",
-          senderNumber: method === "easypaisa" ? sender : "",
-          proof:
-            method === "easypaisa" && proof
-              ? { base64: proof.base64, contentType: proof.contentType }
-              : undefined,
+          txnId,
+          senderNumber: sender,
+          proof: proof ? { base64: proof.base64, contentType: proof.contentType } : undefined,
         },
       });
       if (!res.ok) {
         toast.error(res.error);
         return;
       }
-      sessionStorage.setItem("sukoon-last-order", JSON.stringify(res));
+      // The success page's breakdown (advance now / balance on delivery)
+      // comes from the same totals shown here — the server is the source of
+      // truth for the charge, these are display only.
+      sessionStorage.setItem(
+        "sukoon-last-order",
+        JSON.stringify({ ...res, advanceDue: totals.advanceDue, balanceDue: totals.balanceDue }),
+      );
       clear();
       // Order number in the URL so the success page shows it even after a
       // refresh or when the link is shared.
@@ -208,9 +221,9 @@ function CheckoutPage() {
     }
   };
 
-  const copy = (v: string) => {
-    navigator.clipboard?.writeText(v.replace(/\s/g, ""));
-    toast.success("Copied");
+  const copy = async (v: string) => {
+    const ok = await copyText(v.replace(/\s/g, ""));
+    toast.success(ok ? "Copied" : "Couldn't copy — long-press to copy it manually");
   };
 
   if (!bundle || !totals) {
@@ -291,6 +304,18 @@ function CheckoutPage() {
           <dt>Total</dt>
           <dd className="font-display tabular-nums">{formatPKR(totals.total)}</dd>
         </div>
+        {method === "cod" && (
+          <>
+            <div className="flex justify-between text-sm">
+              <dt className="text-muted-foreground">Pay now (Easypaisa advance)</dt>
+              <dd className="font-semibold tabular-nums">{formatPKR(totals.advanceDue)}</dd>
+            </div>
+            <div className="flex justify-between text-sm">
+              <dt className="text-muted-foreground">Pay on delivery</dt>
+              <dd className="font-semibold tabular-nums">{formatPKR(totals.balanceDue)}</dd>
+            </div>
+          </>
+        )}
       </dl>
       <div className="space-y-2 rounded-2xl bg-muted p-4 text-xs text-muted-foreground">
         <p className="flex items-center gap-2">
@@ -450,36 +475,39 @@ function CheckoutPage() {
                   onClick={() => setMethod("cod")}
                   icon={<Banknote className="h-5 w-5" />}
                   title="Cash on Delivery"
-                  text="Pay the rider when it arrives"
+                  text="Rs 400 advance via Easypaisa, rest on delivery"
                 />
                 <PayOption
                   active={method === "easypaisa"}
                   onClick={() => setMethod("easypaisa")}
                   icon={<Smartphone className="h-5 w-5" />}
                   title="Easypaisa"
-                  text="Send now, we verify & ship"
+                  text="Pay in full now, we verify & ship"
                 />
               </div>
 
-              <div
-                className={cn(
-                  "grid transition-all duration-500",
-                  method === "easypaisa"
-                    ? "mt-6 grid-rows-[1fr] opacity-100"
-                    : "grid-rows-[0fr] opacity-0",
-                )}
-              >
+              {/* Both methods send money via Easypaisa up front — COD sends the
+                  Rs 400 confirmation advance, Easypaisa sends the full total —
+                  so the payment panel shows for both, with the amount due now. */}
+              <div className="mt-6 grid grid-rows-[1fr] opacity-100 transition-all duration-500">
                 <div className="min-h-0 overflow-hidden">
                   <div className="space-y-5 rounded-2xl border border-dashed border-primary/30 bg-secondary/40 p-5">
                     <ol className="space-y-2 text-sm">
                       <li>
                         <span className="font-semibold">1.</span> Open Easypaisa and send{" "}
                         <span className="font-semibold text-primary">
-                          {formatPKR(totals.total)}
+                          {formatPKR(totals.advanceDue)}
                         </span>{" "}
                         to:
                       </li>
                     </ol>
+                    {method === "cod" && (
+                      <p className="rounded-xl bg-card p-3 text-sm text-muted-foreground">
+                        This {formatPKR(totals.advanceDue)} is the delivery charge — it confirms
+                        your order. You&apos;ll pay only the product price (
+                        {formatPKR(totals.balanceDue)}) in cash when your parcel arrives.
+                      </p>
+                    )}
                     <div className="grid gap-2 rounded-2xl bg-card p-4 sm:grid-cols-2">
                       <div>
                         <p className="text-xs text-muted-foreground">Account number</p>
@@ -588,19 +616,50 @@ function CheckoutPage() {
                   </span>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground">Delivery</span>
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-right font-medium">
+                    {formatPKR(totals?.subtotal ?? 0)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">
+                    Delivery {method === "cod" ? "(COD)" : "(Easypaisa)"}
+                  </span>
                   <span className="text-right font-medium">
                     {totals?.delivery === 0 ? "Free" : formatPKR(totals?.delivery ?? 0)}
                   </span>
                 </div>
                 <div className="flex justify-between gap-4 border-t border-border pt-3 text-base">
-                  <span className="font-medium">Total to pay</span>
+                  <span className="font-medium">Order total</span>
                   <span className="font-display text-xl">{formatPKR(totals?.total ?? 0)}</span>
                 </div>
+                {method === "cod" ? (
+                  <>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Pay now (Easypaisa advance)</span>
+                      <span className="text-right font-semibold text-primary">
+                        {formatPKR(totals?.advanceDue ?? 0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Pay on delivery (cash)</span>
+                      <span className="text-right font-semibold">
+                        {formatPKR(totals?.balanceDue ?? 0)}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-muted-foreground">Total to pay now</span>
+                    <span className="text-right font-semibold text-primary">
+                      {formatPKR(totals?.total ?? 0)}
+                    </span>
+                  </div>
+                )}
                 <p className="pt-2 text-muted-foreground">
                   {method === "cod"
-                    ? "Pay this amount in cash when your parcel arrives. We'll call to confirm before dispatch."
-                    : "You paid by Easypaisa — we'll verify your payment and confirm your order shortly."}
+                    ? "Send the Rs 400 advance now via Easypaisa to confirm your order. Pay only the product price in cash when your parcel arrives. We'll call to confirm before dispatch."
+                    : "You've sent the full total by Easypaisa — we'll verify your payment and confirm your order shortly."}
                 </p>
                 <p className="text-muted-foreground">
                   Need help with your order?{" "}
@@ -630,7 +689,9 @@ function CheckoutPage() {
                     Placing order…
                   </>
                 ) : (
-                  `Place order · ${formatPKR(totals.total)}`
+                  method === "cod"
+                    ? `Place order · Pay ${formatPKR(totals.advanceDue)} now`
+                    : `Place order · ${formatPKR(totals.total)}`
                 )}
               </Button>
             </div>
@@ -657,7 +718,9 @@ function CheckoutPage() {
                   Placing order…
                 </>
               ) : (
-                `Place order · ${formatPKR(totals.total)}`
+                method === "cod"
+                    ? `Place order · Pay ${formatPKR(totals.advanceDue)} now`
+                    : `Place order · ${formatPKR(totals.total)}`
               )}
             </Button>
           </div>

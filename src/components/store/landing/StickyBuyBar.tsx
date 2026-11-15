@@ -37,7 +37,14 @@ export function StickyBuyBar() {
 
   const bundle = data.bundles.find((b) => b.id === line?.bundleId) ?? null;
   const totals =
-    bundle && line ? computeTotals(bundle, line.quantity, data.settings.delivery_fee) : null;
+    bundle && line
+      ? computeTotals(
+          bundle,
+          line.quantity,
+          { cod: data.settings.cod_delivery_fee, easypaisa: data.settings.easypaisa_delivery_fee },
+          "cod",
+        )
+      : null;
 
   const goCheckout = () => {
     if (!line) {

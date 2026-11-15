@@ -6,12 +6,18 @@ import { toast } from "sonner";
 import { StoreShell } from "@/components/store/StoreShell";
 import { Button } from "@/components/ui/button";
 import { formatPKR } from "@/lib/format";
+import { copyText } from "@/lib/utils";
 
 type LastOrder = {
   orderNumber: string;
   total: number;
   paymentMethod: "cod" | "easypaisa";
   phone: string;
+  // Present when the order was placed from this tab — the amounts shown on
+  // the success page. Absent for shared links / cleared storage, where the
+  // page shows neutral copy instead of guessing amounts.
+  advanceDue?: number;
+  balanceDue?: number;
 };
 
 export const Route = createFileRoute("/order-success")({
@@ -94,8 +100,8 @@ function SuccessPage() {
                 {hasDetails
                   ? order.paymentMethod === "easypaisa"
                     ? "We've received your order and Easypaisa details. We'll verify your payment and confirm shortly."
-                    : "Your order is confirmed for Cash on Delivery. We'll call to confirm before dispatch."
-                  : "Your order is placed. We'll call to confirm before dispatch."}
+                    : "Your Rs 400 advance via Easypaisa is being verified. Once confirmed, we'll pack and dispatch your order — please pay the remaining product price in cash when your parcel arrives."
+                  : "Your order is placed. Your receipt was emailed to you — it has your order number and the amount to pay."}
               </p>
               <div className="mt-8 rounded-3xl border border-border/70 bg-card p-6 text-left shadow-card">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
@@ -103,9 +109,11 @@ function SuccessPage() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => {
-                    navigator.clipboard?.writeText(order.orderNumber);
-                    toast.success("✓ Copied — save it to track your order.");
+                  onClick={async () => {
+                    const ok = await copyText(order.orderNumber);
+                    toast.success(
+                      ok ? "✓ Copied — save it to track your order." : "Couldn't copy — long-press to copy it manually",
+                    );
                   }}
                   className="mt-1 flex items-center gap-2 font-display text-3xl hover:text-primary"
                 >
@@ -113,11 +121,38 @@ function SuccessPage() {
                 </button>
                 <p className="mt-1 text-sm text-muted-foreground">Save it to track your order.</p>
                 {hasDetails && (
-                  <div className="mt-5 flex justify-between border-t border-border pt-4 text-sm">
-                    <span className="text-muted-foreground">
-                      {order.paymentMethod === "cod" ? "Pay on delivery" : "Paid via Easypaisa"}
-                    </span>
-                    <span className="font-semibold">{formatPKR(order.total)}</span>
+                  <div className="mt-5 space-y-2 border-t border-border pt-4 text-sm">
+                    {order.paymentMethod === "cod" ? (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Advance (Easypaisa) — verifying
+                          </span>
+                          <span className="font-semibold">
+                            {order.advanceDue !== undefined
+                              ? formatPKR(order.advanceDue)
+                              : "—"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Pay on delivery (cash)</span>
+                          <span className="font-semibold">
+                            {order.balanceDue !== undefined
+                              ? formatPKR(order.balanceDue)
+                              : "—"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-t border-border pt-2 font-semibold">
+                          <span>Order total</span>
+                          <span>{formatPKR(order.total)}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Paid via Easypaisa</span>
+                        <span className="font-semibold">{formatPKR(order.total)}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

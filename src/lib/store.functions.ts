@@ -86,7 +86,11 @@ export type Storefront = {
     in_stock: boolean;
     low_stock: boolean;
     stock_count: number;
-    delivery_fee: number;
+    // Delivery fee by payment method, flat per order. COD customers pay the
+    // COD fee now via Easypaisa to confirm; Easypaisa-prepaid customers pay
+    // the Easypaisa fee as part of their full total up front.
+    cod_delivery_fee: number;
+    easypaisa_delivery_fee: number;
     easypaisa_account_name: string;
     easypaisa_number: string;
     support_whatsapp: string;
@@ -112,7 +116,8 @@ export const getStorefront = createServerFn({ method: "GET" }).handler(
         in_stock: stock > 0,
         low_stock: stock > 0 && stock <= (s?.low_stock_threshold ?? 20),
         stock_count: stock,
-        delivery_fee: s?.delivery_fee ?? 200,
+        cod_delivery_fee: s?.cod_delivery_fee ?? 400,
+        easypaisa_delivery_fee: s?.easypaisa_delivery_fee ?? 300,
         easypaisa_account_name: s?.easypaisa_account_name ?? "",
         easypaisa_number: s?.easypaisa_number ?? "",
         support_whatsapp: s?.support_whatsapp ?? "",
@@ -163,11 +168,17 @@ export const placeOrderSchema = z
       .optional(),
   })
   .superRefine((v, ctx) => {
-    if (v.paymentMethod === "easypaisa" && !v.txnId && !v.proof) {
+    // BOTH payment methods send money via Easypaisa up front — COD sends the
+    // Rs 400 confirmation advance, Easypaisa sends the full total — so both
+    // need a transaction ID or a receipt screenshot to prove it.
+    if (!v.txnId && !v.proof) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["txnId"],
-        message: "Add your Easypaisa transaction ID or a receipt screenshot",
+        message:
+          v.paymentMethod === "cod"
+            ? "Add your Easypaisa transaction ID or a receipt screenshot for the Rs 400 advance"
+            : "Add your Easypaisa transaction ID or a receipt screenshot",
       });
     }
     if (v.proof && !ALLOWED_PROOF_TYPES[v.proof.contentType]) {
@@ -212,7 +223,7 @@ export const placeOrder = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let proofPath: string | null = null;
-    if (data.paymentMethod === "easypaisa" && data.proof) {
+    if (data.proof) {
       const bytes = Uint8Array.from(atob(data.proof.base64), (c) => c.charCodeAt(0));
       if (bytes.byteLength > 5 * 1024 * 1024) {
         return { ok: false as const, error: "Receipt image is too large (max 5 MB)." };
@@ -243,8 +254,8 @@ export const placeOrder = createServerFn({ method: "POST" })
       _address: data.address,
       _notes: data.notes ?? "",
       _payment_method: data.paymentMethod,
-      _txn_id: data.paymentMethod === "easypaisa" ? (data.txnId ?? "") : "",
-      _sender_number: data.paymentMethod === "easypaisa" ? (data.senderNumber ?? "") : "",
+      _txn_id: data.txnId ?? "",
+      _sender_number: data.senderNumber ?? "",
       _proof_path: proofPath ?? "",
     });
 
@@ -350,6 +361,8 @@ export type TrackedOrder = {
   bundle_name: string;
   quantity: number;
   total_pieces: number;
+  subtotal: number;
+  delivery_fee: number;
   total: number;
   city: string;
   tracking_number: string | null;
@@ -367,7 +380,7 @@ export const trackOrder = createServerFn({ method: "POST" })
     const { data: order } = await supabaseAdmin
       .from("orders")
       .select(
-        "id,order_number,status,payment_status,payment_method,bundle_name,quantity,total_pieces,total,city,tracking_number,created_at",
+        "id,order_number,status,payment_status,payment_method,bundle_name,quantity,total_pieces,subtotal,delivery_fee,total,city,tracking_number,created_at",
       )
       .eq("order_number", data.orderNumber)
       .eq("phone", data.phone)

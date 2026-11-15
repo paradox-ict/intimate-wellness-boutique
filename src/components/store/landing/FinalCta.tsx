@@ -12,7 +12,8 @@ export function FinalCta() {
             Your comfort, <em>your secret.</em>
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-primary-foreground/80">
-            Order today with Cash on Delivery. Plain packaging, guaranteed.
+            Order today — COD with a Rs 400 Easypaisa advance, or pay in full via Easypaisa.
+            Plain packaging, guaranteed.
           </p>
           <Button variant="ink" size="xl" className="mt-8" asChild>
             <a href="#bundles">

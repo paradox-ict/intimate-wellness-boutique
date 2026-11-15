@@ -19,15 +19,46 @@ describe("Pakistani phone numbers", () => {
 });
 
 describe("Order totals", () => {
-  it("adds the delivery fee to bundles without free delivery", () => {
-    expect(computeTotals({ price: 1499, pieces: 1, free_delivery: false }, 2, 200)).toEqual({
-      subtotal: 2998,
-      delivery: 200,
-      total: 3198,
-      pieces: 2,
+  const fees = { cod: 400, easypaisa: 300 };
+
+  it("COD Single: price + Rs 400 delivery, advance Rs 400, balance = product price", () => {
+    expect(computeTotals({ price: 1950, pieces: 1 }, 1, fees, "cod")).toEqual({
+      subtotal: 1950,
+      delivery: 400,
+      total: 2350,
+      pieces: 1,
+      advanceDue: 400,
+      balanceDue: 1950,
     });
   });
-  it("skips the delivery fee for free-delivery bundles", () => {
-    expect(computeTotals({ price: 3999, pieces: 3, free_delivery: true }, 1, 200).total).toBe(3999);
+  it("Easypaisa Single: price + Rs 300 delivery, full total due now, nothing on delivery", () => {
+    expect(computeTotals({ price: 1950, pieces: 1 }, 1, fees, "easypaisa")).toEqual({
+      subtotal: 1950,
+      delivery: 300,
+      total: 2250,
+      pieces: 1,
+      advanceDue: 2250,
+      balanceDue: 0,
+    });
+  });
+  it("COD Double x2: fee stays flat per order, not per pack", () => {
+    expect(computeTotals({ price: 3450, pieces: 2 }, 2, fees, "cod")).toEqual({
+      subtotal: 6900,
+      delivery: 400,
+      total: 7300,
+      pieces: 4,
+      advanceDue: 400,
+      balanceDue: 6900,
+    });
+  });
+  it("Easypaisa Trio: fee is Rs 300 even on the biggest pack", () => {
+    expect(computeTotals({ price: 4850, pieces: 3 }, 1, fees, "easypaisa")).toEqual({
+      subtotal: 4850,
+      delivery: 300,
+      total: 5150,
+      pieces: 3,
+      advanceDue: 5150,
+      balanceDue: 0,
+    });
   });
 });

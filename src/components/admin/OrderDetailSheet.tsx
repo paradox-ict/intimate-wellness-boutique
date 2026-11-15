@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { notifyOrderStatus } from "@/lib/store.functions";
 import { orderEventsQuery, type Order } from "@/lib/admin-queries";
 import { ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, formatPKR } from "@/lib/format";
+import { copyText } from "@/lib/utils";
 import {
   Sheet,
   SheetContent,
@@ -140,17 +141,24 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
       "Order updated",
     );
 
-  const copy = (v: string) => {
-    navigator.clipboard?.writeText(v);
-    toast.success("Copied");
+  const copy = async (v: string) => {
+    const ok = await copyText(v);
+    toast.success(ok ? "Copied" : "Couldn't copy — long-press to copy it manually");
   };
 
   return (
     <Sheet open={!!order} onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full overflow-y-auto bg-background p-0 sm:max-w-xl">
         <SheetHeader className="sticky top-0 z-10 border-b border-border bg-background/95 px-6 py-5 text-left backdrop-blur">
-          <SheetTitle className="font-display text-2xl font-normal">
+          <SheetTitle className="flex items-center gap-2 font-display text-2xl font-normal">
             {order.order_number}
+            <button
+              type="button"
+              onClick={() => copy(order.order_number)}
+              aria-label="Copy order number"
+            >
+              <Copy className="h-4 w-4 text-muted-foreground" />
+            </button>
           </SheetTitle>
           <SheetDescription asChild>
             <div className="flex flex-wrap items-center gap-2">
@@ -212,37 +220,74 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
             </div>
             <div className="mt-1 flex justify-between text-sm text-muted-foreground">
               <span>Delivery</span>
-              <span>{order.delivery_fee ? formatPKR(order.delivery_fee) : "Free"}</span>
+              <span>{formatPKR(order.delivery_fee)}</span>
             </div>
+            {order.payment_method === "cod" && (
+              <>
+                <div className="mt-1 flex justify-between text-sm text-muted-foreground">
+                  <span>Advance paid (Easypaisa)</span>
+                  <span>{formatPKR(order.delivery_fee)}</span>
+                </div>
+                <div className="mt-1 flex justify-between text-sm text-muted-foreground">
+                  <span>Balance on delivery (cash)</span>
+                  <span>{formatPKR(order.subtotal)}</span>
+                </div>
+              </>
+            )}
             <div className="mt-3 flex justify-between border-t border-border pt-3 font-semibold">
               <span>Total · {order.total_pieces} applicators</span>
               <span>{formatPKR(order.total)}</span>
             </div>
           </section>
 
-          {order.payment_method === "easypaisa" && (
-            <section className="rounded-2xl border-2 border-primary/20 bg-card p-5">
-              <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Easypaisa payment
-              </h3>
-              <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+          {/* Both methods send money via Easypaisa up front — COD sends the
+              Rs 400 advance, Easypaisa sends the full total — so both get a
+              payment section with the amount to verify. */}
+          <section className="rounded-2xl border-2 border-primary/20 bg-card p-5">
+            <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              {order.payment_method === "cod"
+                ? "COD advance (Easypaisa)"
+                : "Easypaisa payment"}
+            </h3>
+            <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt className="text-xs text-muted-foreground">Transaction ID</dt>
+                <dd className="flex items-center gap-1.5 font-mono font-semibold">
+                  {order.easypaisa_txn_id ?? "—"}
+                  {order.easypaisa_txn_id && (
+                    <button
+                      type="button"
+                      onClick={() => copy(order.easypaisa_txn_id!)}
+                      aria-label="Copy transaction ID"
+                    >
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Sent from</dt>
+                <dd className="font-medium">{order.easypaisa_sender_number ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">
+                  {order.payment_method === "cod" ? "Advance expected" : "Expected amount"}
+                </dt>
+                <dd className="font-semibold text-primary">
+                  {formatPKR(order.payment_method === "cod" ? order.delivery_fee : order.total)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">Status</dt>
+                <dd>{PAYMENT_STATUS_LABEL[order.payment_status]}</dd>
+              </div>
+              {order.payment_method === "cod" && (
                 <div>
-                  <dt className="text-xs text-muted-foreground">Transaction ID</dt>
-                  <dd className="font-mono font-semibold">{order.easypaisa_txn_id ?? "—"}</dd>
+                  <dt className="text-xs text-muted-foreground">Balance on delivery (cash)</dt>
+                  <dd className="font-semibold">{formatPKR(order.subtotal)}</dd>
                 </div>
-                <div>
-                  <dt className="text-xs text-muted-foreground">Sent from</dt>
-                  <dd className="font-medium">{order.easypaisa_sender_number ?? "—"}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-muted-foreground">Expected amount</dt>
-                  <dd className="font-semibold text-primary">{formatPKR(order.total)}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-muted-foreground">Status</dt>
-                  <dd>{PAYMENT_STATUS_LABEL[order.payment_status]}</dd>
-                </div>
-              </dl>
+              )}
+            </dl>
               {order.payment_proof_path && (
                 <div className="mt-4">
                   {proofUrl ? (
@@ -292,7 +337,6 @@ export function OrderDetailSheet({ order, onClose }: { order: Order | null; onCl
                 </div>
               )}
             </section>
-          )}
 
           <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
             <h3 className="font-sans text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
