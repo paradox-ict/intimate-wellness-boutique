@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  isValidOtpCode,
   MAX_OTP_SENDS_PER_BROWSER_PER_HOUR,
   MAX_OTP_SENDS_PER_EMAIL_PER_HOUR,
   MAX_OTP_VERIFY_TRIES_PER_CODE,
@@ -56,6 +57,27 @@ describe("otpSendAllowed / recordOtpSend", () => {
     expect(otpSendAllowed("a@example.com").allowed).toBe(false);
     vi.advanceTimersByTime(60 * 60 * 1000 + 1);
     expect(otpSendAllowed("a@example.com").allowed).toBe(true);
+  });
+});
+
+describe("isValidOtpCode", () => {
+  it("accepts the 8-digit code Supabase actually sends", () => {
+    expect(isValidOtpCode("01445824")).toBe(true);
+    expect(isValidOtpCode("95970085")).toBe(true);
+  });
+
+  it("still accepts a 6-digit code, defensively", () => {
+    expect(isValidOtpCode("123456")).toBe(true);
+  });
+
+  it("rejects anything that is not 6 or 8 digits", () => {
+    expect(isValidOtpCode("")).toBe(false);
+    expect(isValidOtpCode("12345")).toBe(false);
+    expect(isValidOtpCode("1234567")).toBe(false);
+    expect(isValidOtpCode("123456789")).toBe(false);
+    expect(isValidOtpCode("12345a")).toBe(false);
+    expect(isValidOtpCode("12345678 ")).toBe(false);
+    expect(isValidOtpCode(" 12345678")).toBe(false);
   });
 });
 

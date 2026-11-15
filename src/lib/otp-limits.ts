@@ -19,6 +19,14 @@ export const MAX_OTP_SENDS_PER_EMAIL_PER_HOUR = 5;
 export const MAX_OTP_SENDS_PER_BROWSER_PER_HOUR = 10;
 export const MAX_OTP_VERIFY_TRIES_PER_CODE = 5;
 
+// Supabase sends an 8-digit OTP code for this project (verified 2026-11-15:
+// the code in the email subject and body is 8 digits long). Accept 6 too,
+// defensively, in case Supabase ever sends the shorter form again — the
+// field must never silently truncate a real code again.
+export function isValidOtpCode(code: string): boolean {
+  return /^\d{6}$/.test(code) || /^\d{8}$/.test(code);
+}
+
 type SendRecord = { e: string; t: number };
 
 function readSends(): SendRecord[] {
