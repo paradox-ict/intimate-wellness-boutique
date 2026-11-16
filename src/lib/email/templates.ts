@@ -158,7 +158,7 @@ export function orderConfirmationEmail(
   o: OrderEmailData,
   easypaisa: EasypaisaDetails,
 ): BuiltEmail {
-  const subject = `Your RoseCare order ${o.order_number} is confirmed`;
+  const subject = `We received your RoseCare order ${o.order_number} — verifying payment`;
   const trackUrl = TRACK_URL(o.order_number, o.phone);
   const date = orderDate(o.created_at);
 
@@ -217,7 +217,7 @@ ${o.easypaisa_txn_id ? `<p style="margin:8px 0 0;color:#7d6a72;font-size:13px;">
 
   const body = `
 <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.3;margin:8px 0 4px;font-weight:600;">Thank you, ${esc(firstName(o.customer_name))}!</h1>
-<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Your order is confirmed. Here is your receipt — keep it safe.</p>
+<p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Thank you — we've received your order. Here is your receipt — keep it safe.</p>
 <p style="text-align:center;margin:18px 0;"><a href="${trackUrl}" style="text-decoration:none;color:inherit;"><span style="display:inline-block;background-color:#f7efe8;border:1px dashed #c2185b;border-radius:12px;padding:12px 22px 10px;text-align:center;"><span style="display:block;font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:1px;color:#3d2b33;"><strong>${esc(o.order_number)}</strong></span><span style="display:block;margin-top:6px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:12px;font-weight:600;color:#c2185b;">Tap to open your order — the number copies automatically</span></span></a></p>
 ${date ? `<p style="text-align:center;font-size:13px;color:#7d6a72;margin:0 0 4px;">Placed on ${esc(date)}</p>` : ""}
 ${button(trackUrl, "Track your order")}
@@ -235,7 +235,7 @@ ${itemsTable(o)}
   const text = [
     `Thank you, ${firstName(o.customer_name)}!`,
     ``,
-    `Your RoseCare order ${o.order_number} is confirmed.${date ? ` Placed on ${date}.` : ""}`,
+    `We received your RoseCare order ${o.order_number}.${date ? ` Placed on ${date}.` : ""}`,
     ``,
     `Track your order: ${trackUrl}`,
     ``,

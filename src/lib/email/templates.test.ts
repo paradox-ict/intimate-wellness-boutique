@@ -72,6 +72,23 @@ describe("order confirmation email", () => {
     expect(e.text).not.toContain("<div");
   });
 
+  it("says the order was received and is being verified — never 'confirmed' before payment is verified", () => {
+    const e = orderConfirmationEmail(sampleOrder, easypaisa);
+    // The placement receipt must not call the order confirmed: the real
+    // confirmation is the separate status email sent after verification.
+    // (The payment box and "What happens next" still say "it's confirmed"
+    // about the later email, so only the subject/headline/receipt line
+    // are asserted here.)
+    expect(e.subject).toBe("We received your RoseCare order SK-ABC123 — verifying payment");
+    expect(e.subject).not.toContain("confirmed");
+    expect(e.subject).toContain("received");
+    expect(e.subject).toContain("verifying");
+    expect(e.html).toContain("Thank you — we've received your order.");
+    expect(e.html).not.toContain("Your order is confirmed");
+    expect(e.text).toContain("We received your RoseCare order SK-ABC123.");
+    expect(e.text).not.toContain("is confirmed");
+  });
+
   it("does not repeat the city when the address already ends with it", () => {
     const dup: OrderEmailData = {
       ...sampleOrder,
