@@ -13,6 +13,7 @@ import { Reviews } from "@/components/store/landing/Reviews";
 import { Faq, FAQS } from "@/components/store/landing/Faq";
 import { FinalCta } from "@/components/store/landing/FinalCta";
 import { storefrontQuery } from "@/lib/storefront-query";
+import { productReviewJsonLd } from "@/lib/reviews";
 import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/")({
@@ -72,6 +73,8 @@ function Index() {
           offerCount: data.bundles.length,
           availability: "https://schema.org/InStock",
         },
+        // Same reviews as the visible cards below, so Google can show stars.
+        ...productReviewJsonLd(),
       },
       {
         "@type": "Organization",

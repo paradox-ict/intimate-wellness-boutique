@@ -2,67 +2,12 @@ import { BadgeCheck, Star } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "./SectionHeading";
-
-// Reviews shown on the landing page. These are written from real customer
-// feedback received by the owner; every card is marked as a verified buyer.
-const REVIEWS = [
-  {
-    name: "Ayesha K.",
-    city: "Lahore",
-    rating: 5,
-    date: "12 Nov 2026",
-    text: "I was honestly nervous ordering something like this online, but the parcel came in a plain brown box with no product name anywhere on it. Using it for two weeks now and I feel fresh all day, even in this heat. Worth every rupee for me.",
-  },
-  {
-    name: "Fatima S.",
-    city: "Karachi",
-    rating: 5,
-    date: "8 Nov 2026",
-    text: "Ordered on Tuesday, parcel reached on Friday. Payment through Easypaisa took two minutes, nothing complicated. The gel is very light and easy to use, no irritation at all.",
-  },
-  {
-    name: "Zainab M.",
-    city: "Islamabad",
-    rating: 4,
-    date: "3 Nov 2026",
-    text: "Good product, does what it says. I feel more comfortable and confident since I started using it. Only reason for four stars is my parcel came a day late, it was supposed to come Thursday and came Friday. Otherwise no complaint.",
-  },
-  {
-    name: "Mahnoor A.",
-    city: "Rawalpindi",
-    rating: 5,
-    date: "30 Oct 2026",
-    text: "Packing bilkul plain thi, ghar walon ko kuch pata nahi chala. Three weeks se use kar rahi hun, bohat farq mehsoos hua. Pehle thora hesitate kar rahi thi order karne se, but ab lagta hai sahi faisla tha.",
-  },
-  {
-    name: "Hira N.",
-    city: "Faisalabad",
-    rating: 5,
-    date: "24 Oct 2026",
-    text: "I messaged them on WhatsApp before ordering because I had questions, they replied in like ten minutes and explained everything properly. The gel itself is smooth and gentle, I use it at night and it feels comfortable. Will order again when this tube finishes.",
-  },
-  {
-    name: "Sana R.",
-    city: "Multan",
-    rating: 4,
-    date: "19 Oct 2026",
-    text: "Using it for a month now and freshness lasts the whole day, that part is genuinely good. I gave four stars only because the usage leaflet inside is in English only, my mother also wanted to try it and she reads Urdu. It would be nice if they add Urdu instructions too.",
-  },
-  {
-    name: "Rabia T.",
-    city: "Karachi",
-    rating: 5,
-    date: "12 Oct 2026",
-    text: "Second time ordering. First tube lasted me almost two months because a little goes a long way. Delivery is always discreet, the box looks like any other parcel. That matters a lot for something like this.",
-  },
-  {
-    name: "Iqra B.",
-    city: "Lahore",
-    rating: 5,
-    date: "7 Oct 2026",
-    text: "After my second baby I didn't feel comfortable the way I used to, so I thought let me try this. Three weeks in and I feel more like myself again. And the delivery was so private, even the rider had no idea what was inside. Bas itna kahungi, try karke dekhein.",
-  },
-];
+import {
+  REVIEWS,
+  REVIEW_COUNT,
+  REVIEW_RATING,
+  formatReviewDate,
+} from "@/lib/reviews";
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -90,7 +35,7 @@ export function Reviews() {
               Reviews from <em className="text-brand">real buyers</em>
             </>
           }
-          intro="Rated 4.8 out of 5 by 8 verified buyers across Pakistan."
+          intro={`Rated ${REVIEW_RATING.toFixed(1)} out of 5 by ${REVIEW_COUNT} verified buyers across Pakistan.`}
         />
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {REVIEWS.map((r, i) => (
@@ -113,7 +58,7 @@ export function Reviews() {
                     </span>
                     <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                       <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-success" />
-                      Verified buyer · {r.date}
+                      Verified buyer · {formatReviewDate(r.datePublished)}
                     </span>
                   </span>
                 </figcaption>

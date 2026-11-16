@@ -16,6 +16,8 @@ import { storefrontQuery } from "@/lib/storefront-query";
 import { formatPKR } from "@/lib/format";
 import { BENEFITS } from "@/components/store/landing/Benefits";
 import { FAQS } from "@/components/store/landing/Faq";
+import { Reviews } from "@/components/store/landing/Reviews";
+import { productReviewJsonLd } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
 import pack from "@/assets/product-pack.jpg";
@@ -110,6 +112,8 @@ function ProductPage() {
       offerCount: data.bundles.length,
       availability: "https://schema.org/InStock",
     },
+    // Same reviews as the visible cards on this page, so Google can show stars.
+    ...productReviewJsonLd(),
   };
 
   const buyNow = (id: string) => {
@@ -348,6 +352,10 @@ function ProductPage() {
             ))}
           </div>
         </div>
+
+        {/* Reviews — same verified-buyer reviews as the home page, so the
+            review markup above matches what visitors see here. */}
+        <Reviews />
 
         {/* Good to know */}
         <div className="mx-auto mt-16 max-w-3xl md:mt-24">
