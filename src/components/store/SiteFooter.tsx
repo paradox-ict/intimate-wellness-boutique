@@ -48,6 +48,16 @@ export function SiteFooter() {
                   FAQ
                 </a>
               </li>
+              <li>
+                <Link to="/faq" className="hover:text-ink-foreground">
+                  All questions
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="hover:text-ink-foreground">
+                  About RoseCare
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -63,6 +73,11 @@ export function SiteFooter() {
               <li>
                 <Link to="/checkout" className="hover:text-ink-foreground">
                   Checkout
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-ink-foreground">
+                  Contact us
                 </Link>
               </li>
               <li>Cash on Delivery · Easypaisa</li>

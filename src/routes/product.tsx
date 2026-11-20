@@ -19,7 +19,7 @@ import { FAQS } from "@/components/store/landing/Faq";
 import { Reviews } from "@/components/store/landing/Reviews";
 import { productReviewJsonLd } from "@/lib/reviews";
 import { cn } from "@/lib/utils";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, breadcrumbJsonLd } from "@/lib/site";
 import pack from "@/assets/product-pack.jpg";
 import packM from "@/assets/product-pack-m.jpg";
 import applicators from "@/assets/product-applicators.jpg";
@@ -53,7 +53,10 @@ export const Route = createFileRoute("/product")({
       { property: "og:image", content: `${SITE_URL}/images/og-image.jpg` },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "828" },
-      { property: "og:image:alt", content: "RoseCare herbal tightening gel applicator on silk with herbs and a flower" },
+      {
+        property: "og:image:alt",
+        content: "RoseCare herbal tightening gel applicator on silk with herbs and a flower",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Herbal Tightening Gel — RoseCare" },
       {
@@ -72,8 +75,18 @@ export const Route = createFileRoute("/product")({
 const SHOTS = [
   { src: pack, srcM: packM, alt: "RoseCare gel pouches with applicator", label: "The pack" },
   { src: applicators, srcM: applicatorsM, alt: "Two pre-filled applicators", label: "Applicators" },
-  { src: diagram, srcM: diagramM, alt: "Gel pouches and applicator diagram", label: "Inside the pack" },
-  { src: benefitsImg, srcM: benefitsM, alt: "RoseCare gel — the seven benefits", label: "Benefits" },
+  {
+    src: diagram,
+    srcM: diagramM,
+    alt: "Gel pouches and applicator diagram",
+    label: "Inside the pack",
+  },
+  {
+    src: benefitsImg,
+    srcM: benefitsM,
+    alt: "RoseCare gel — the seven benefits",
+    label: "Benefits",
+  },
 ];
 
 function ProductPage() {
@@ -126,6 +139,17 @@ function ProductPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbJsonLd([
+              { name: "Home", path: "/" },
+              { name: "Product", path: "/product" },
+            ]),
+          ),
+        }}
       />
       <section className="bg-hero px-5 pb-16 pt-8 md:px-8 md:pb-24 md:pt-12">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2 lg:gap-16">
